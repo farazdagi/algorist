@@ -9,12 +9,7 @@ homepage = "https://github.com/farazdagi/algorist"
 repository = "https://github.com/farazdagi/algorist"
 documentation = "https://docs.rs/algorist"
 readme = "README.md"
-keywords = [
-  "algorithms",
-  "data-structures",
-  "competitive-programming",
-  "codeforces",
-]
+keywords = ["algorithms", "data-structures", "codeforces"]
 categories = ["algorithms", "data-structures"]
 
 [dependencies]

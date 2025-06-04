@@ -4,3 +4,8 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+argh = "0.1.13"
+
+[[bin]]
+name = "cargo-algorist"
+path = "src/main.rs"

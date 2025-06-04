@@ -2,6 +2,15 @@
 name = "algorist"
 version = "0.1.0"
 edition = "2024"
+license = "MIT"
+authors = ["Victor Farazdagi <farazdagi@gmail.com>"]
+description = "Helper tools, algorithms and data structures for competitive programming"
+homepage = "https://github.com/farazdagi/algorist"
+repository = "https://github.com/farazdagi/algorist"
+documentation = "https://docs.rs/algorist"
+readme = "README.md"
+keywords = ["algorithms", "data structures", "competitive programming", "codeforces"]
+categories = ["algorithms", "data-structures"]
 
 [dependencies]
 argh = "0.1.13"

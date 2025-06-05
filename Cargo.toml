@@ -19,4 +19,4 @@ path = "src/main.rs"
 [dependencies]
 argh = "0.1.13"
 anyhow = "1.0"
-
+include_dir = { version = "0.7", features = ["glob"] }

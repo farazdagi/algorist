@@ -1,11 +1,14 @@
 use {
     anyhow::{Context, Result, anyhow},
     argh::FromArgs,
+    include_dir::{Dir, include_dir},
     std::{
-        fs::{copy, create_dir_all},
-        path::PathBuf,
+        fs,
+        path::{Path, PathBuf},
     },
 };
+
+static TEMPLATE_DIR: Dir = include_dir!("$CARGO_MANIFEST_DIR/crates/template");
 
 /// The algorist CLI tool.
 #[derive(FromArgs, PartialEq, Debug)]
@@ -55,27 +58,37 @@ fn main() -> Result<()> {
             if src_dir.exists() {
                 return Err(anyhow!("Directory already exists: {:?}", root_dir));
             }
-            create_dir_all(src_dir)?;
+            fs::create_dir_all(src_dir)?;
 
-            // Copy the template files into the src directory.
-            let template_dir = PathBuf::from("crates/template")
-                .canonicalize()
-                .context("template directory not found")?;
-
-            let files_to_copy = ["Cargo.toml", "src/main.rs"];
-            for file in files_to_copy {
-                let src_path = template_dir.join(file);
-                if !src_path.exists() {
-                    return Err(anyhow!("Template file not found: {:?}", src_path));
-                }
-                let dest_path = root_dir.join(file);
-                copy(&src_path, &dest_path)
-                    .context(format!("failed to copy {:?} to {:?}", src_path, dest_path))?;
-            }
+            // Copy template files into the contest directory.
+            copy_template(&root_dir).context("failed to copy template files")?;
 
             println!("New contest created at {:?}", root_dir);
         }
     }
+
+    Ok(())
+}
+
+fn copy_template(target: &Path) -> std::io::Result<()> {
+    fn copy(glob: &str, target: &Path) -> std::io::Result<()> {
+        for entry in TEMPLATE_DIR.find(glob).unwrap() {
+            if let Some(file) = entry.as_file() {
+                let rel_path = file.path();
+                let dest_path = target.join(rel_path);
+                if let Some(parent) = dest_path.parent() {
+                    fs::create_dir_all(parent)?;
+                }
+                fs::write(dest_path, file.contents())?;
+            }
+        }
+        Ok(())
+    }
+
+    // For testing purposes, template directory may contain `target` and
+    // `Cargo.lock` files. They are ignored by the glob patterns.
+    copy("src/**/*", target)?;
+    copy("Cargo.toml", target)?;
 
     Ok(())
 }

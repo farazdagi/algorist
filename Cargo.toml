@@ -12,9 +12,11 @@ readme = "README.md"
 keywords = ["algorithms", "data-structures", "codeforces"]
 categories = ["algorithms", "data-structures"]
 
-[dependencies]
-argh = "0.1.13"
-
 [[bin]]
 name = "cargo-algorist"
 path = "src/main.rs"
+
+[dependencies]
+argh = "0.1.13"
+anyhow = "1.0"
+

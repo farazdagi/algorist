@@ -2,13 +2,12 @@ use {
     crate::cmd::SubCmd,
     anyhow::{Context, Result, anyhow},
     argh::FromArgs,
-    include_dir::{Dir, include_dir},
     lazy_static::lazy_static,
     regex::Regex,
     std::{
         fs::{self, File},
         io::{BufRead, BufReader, BufWriter, Write},
-        path::{Path, PathBuf},
+        path::PathBuf,
     },
 };
 

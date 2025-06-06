@@ -11,6 +11,12 @@ documentation = "https://docs.rs/algorist"
 readme = "README.md"
 keywords = ["algorithms", "data-structures", "codeforces"]
 categories = ["algorithms", "data-structures"]
+include = [
+    "src/**",
+    "Cargo.toml",
+    "Cargo.lock",
+    "crates/templates/**",
+]
 
 [[bin]]
 name = "cargo-algorist"

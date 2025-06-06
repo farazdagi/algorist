@@ -1,6 +1,6 @@
 [package]
 name = "algorist"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2024"
 license = "MIT"
 authors = ["Victor Farazdagi <farazdagi@gmail.com>"]
@@ -20,3 +20,5 @@ path = "src/main.rs"
 argh = "0.1.13"
 anyhow = "1.0"
 include_dir = { version = "0.7", features = ["glob"] }
+regex = "1.11"
+lazy_static = "1.5"

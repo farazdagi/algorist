@@ -58,10 +58,28 @@ fn copy_template(target: &Path) -> std::io::Result<()> {
         Ok(())
     }
 
+    fn copy_file(src: &str, target: &Path) -> std::io::Result<()> {
+        let file = TEMPLATE_DIR
+            .get_file(src)
+            .expect("file should exist in template directory");
+        if let Some(parent) = target.parent() {
+            fs::create_dir_all(parent)?;
+        }
+        fs::write(target, file.contents())
+    }
+
     // For testing purposes, template directory may contain `target` and
     // `Cargo.lock` files. They are ignored by the glob patterns.
     copy("src/**/*", target)?;
     copy("Cargo.toml", target)?;
+
+    // Make copies of `src/bin/a.rs` file.
+    for letter in 'b'..='h' {
+        copy_file(
+            "src/bin/a.rs",
+            target.join(format!("src/bin/{}.rs", letter)).as_path(),
+        )?;
+    }
 
     Ok(())
 }

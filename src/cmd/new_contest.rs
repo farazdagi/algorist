@@ -71,7 +71,7 @@ fn copy_template(target: &Path) -> std::io::Result<()> {
     // For testing purposes, template directory may contain `target` and
     // `Cargo.lock` files. They are ignored by the glob patterns.
     copy("src/**/*", target)?;
-    copy("Cargo.toml", target)?;
+    copy_file("Cargo.toml.orig", target.join("Cargo.toml").as_path())?;
 
     // Make copies of `src/bin/a.rs` file.
     for letter in 'b'..='h' {

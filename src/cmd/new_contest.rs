@@ -21,6 +21,11 @@ pub struct NewSubCmd {
     #[argh(positional)]
     /// contest ID
     id: String,
+
+    #[argh(switch)]
+    /// no problems will be added to the contest, only the directory structure
+    /// will be created
+    no_problems: bool,
 }
 
 impl SubCmd for NewSubCmd {
@@ -38,59 +43,66 @@ impl SubCmd for NewSubCmd {
         fs::create_dir_all(src_dir)?;
 
         // Copy template files into the contest directory.
-        copy_template(&root_dir).context("failed to copy template files")?;
+        self.copy_template(&root_dir)
+            .context("failed to copy template files")?;
 
         println!("New contest created at {:?}", root_dir);
         Ok(())
     }
 }
 
-fn copy_template(target: &Path) -> std::io::Result<()> {
-    fn copy(dir: &Dir, glob: &str, target: &Path) -> std::io::Result<()> {
-        for entry in dir.find(glob).unwrap() {
-            if let Some(file) = entry.as_file() {
-                let rel_path = file.path();
-                let dest_path = target.join(rel_path);
-                if let Some(parent) = dest_path.parent() {
-                    fs::create_dir_all(parent)?;
+impl NewSubCmd {
+    fn copy_template(&self, target: &Path) -> std::io::Result<()> {
+        fn copy(dir: &Dir, glob: &str, target: &Path) -> std::io::Result<()> {
+            for entry in dir.find(glob).unwrap() {
+                if let Some(file) = entry.as_file() {
+                    let rel_path = file.path();
+                    let dest_path = target.join(rel_path);
+                    if let Some(parent) = dest_path.parent() {
+                        fs::create_dir_all(parent)?;
+                    }
+                    fs::write(dest_path, file.contents())?;
                 }
-                fs::write(dest_path, file.contents())?;
+            }
+            Ok(())
+        }
+
+        fn copy_to(dir: &Dir, src: &str, target: &Path) -> std::io::Result<()> {
+            let file = dir
+                .get_file(src)
+                .expect(format!("file should exist in template directory: {}", src).as_str());
+            if let Some(parent) = target.parent() {
+                fs::create_dir_all(parent)?;
+            }
+            fs::write(target, file.contents())
+        }
+
+        // Copy the necessary library files for contest project.
+        println!("Copying template files to the contest directory...");
+        copy(&SRC_DIR, "lib.rs", &target.join("src"))?;
+        copy(&SRC_DIR, "io/**/*", &target.join("src"))?;
+        copy(&SRC_DIR, "collections/**/*", &target.join("src"))?;
+        copy(&SRC_DIR, "ext/**/*", &target.join("src"))?;
+        copy(&SRC_DIR, "math/**/*", &target.join("src"))?;
+        copy(&SRC_DIR, "misc/**/*", &target.join("src"))?;
+        copy_to(&TPL_DIR, "Cargo.toml.tpl", &target.join("Cargo.toml"))?;
+        copy_to(&TPL_DIR, "README.md", &target.join("README.md"))?;
+
+        // Copy files from root directory.
+        fs::write(target.join("rustfmt.toml"), RUSTFMT_TOML)?;
+
+        // Create files for problems a-h.
+        if !self.no_problems {
+            println!("Adding problems a-h to the contest...");
+            for letter in 'a'..='h' {
+                copy_to(
+                    &TPL_DIR,
+                    "problem.rs",
+                    &target.join(format!("src/bin/{}.rs", letter)),
+                )?;
             }
         }
+
         Ok(())
     }
-
-    fn copy_to(dir: &Dir, src: &str, target: &Path) -> std::io::Result<()> {
-        let file = dir
-            .get_file(src)
-            .expect(format!("file should exist in template directory: {}", src).as_str());
-        if let Some(parent) = target.parent() {
-            fs::create_dir_all(parent)?;
-        }
-        fs::write(target, file.contents())
-    }
-
-    // Copy the necessary library files for contest project.
-    copy(&SRC_DIR, "lib.rs", &target.join("src"))?;
-    copy(&SRC_DIR, "io/**/*", &target.join("src"))?;
-    copy(&SRC_DIR, "collections/**/*", &target.join("src"))?;
-    copy(&SRC_DIR, "ext/**/*", &target.join("src"))?;
-    copy(&SRC_DIR, "math/**/*", &target.join("src"))?;
-    copy(&SRC_DIR, "misc/**/*", &target.join("src"))?;
-    copy_to(&TPL_DIR, "Cargo.toml.tpl", &target.join("Cargo.toml"))?;
-    copy_to(&TPL_DIR, "README.md", &target.join("README.md"))?;
-
-    // Copy files from root directory.
-    fs::write(target.join("rustfmt.toml"), RUSTFMT_TOML)?;
-
-    // Create files for problems a-h.
-    for letter in 'a'..='h' {
-        copy_to(
-            &TPL_DIR,
-            "problem.rs",
-            &target.join(format!("src/bin/{}.rs", letter)),
-        )?;
-    }
-
-    Ok(())
 }

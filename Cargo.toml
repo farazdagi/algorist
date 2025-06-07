@@ -1,6 +1,6 @@
 [package]
 name = "algorist"
-version = "0.3.2"
+version = "0.3.3"
 edition = "2024"
 license = "MIT"
 authors = ["Victor Farazdagi <farazdagi@gmail.com>"]
@@ -12,6 +12,7 @@ readme = "README.md"
 keywords = ["algorithms", "data-structures", "codeforces"]
 categories = ["algorithms", "data-structures"]
 default-run = "cargo-algorist"
+exclude = ["src/bin/a.rs"]
 
 [[bin]]
 name = "cargo-algorist"

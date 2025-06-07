@@ -73,6 +73,10 @@ fn copy_template(target: &Path) -> std::io::Result<()> {
     // Copy the necessary library files for contest project.
     copy(&SRC_DIR, "lib.rs", &target.join("src"))?;
     copy(&SRC_DIR, "io/**/*", &target.join("src"))?;
+    copy(&SRC_DIR, "collections/**/*", &target.join("src"))?;
+    copy(&SRC_DIR, "ext/**/*", &target.join("src"))?;
+    copy(&SRC_DIR, "math/**/*", &target.join("src"))?;
+    copy(&SRC_DIR, "misc/**/*", &target.join("src"))?;
     copy_to(&TPL_DIR, "Cargo.toml.tpl", &target.join("Cargo.toml"))?;
     copy_to(&TPL_DIR, "README.md", &target.join("README.md"))?;
 

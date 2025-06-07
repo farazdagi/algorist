@@ -9,7 +9,9 @@ use {
     },
 };
 
-static TEMPLATE_DIR: Dir = include_dir!("$CARGO_MANIFEST_DIR/crates/template");
+static SRC_DIR: Dir = include_dir!("$CARGO_MANIFEST_DIR/src");
+static TPL_CARGO_TOML: &str = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/Cargo.toml.tpl"));
+static RUSTFMT_TOML: &str = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/rustfmt.toml"));
 
 /// Create a new contest project with the given contest ID.
 /// It creates a directory structure and necessary Rust files for the contest.
@@ -45,7 +47,7 @@ impl SubCmd for NewSubCmd {
 
 fn copy_template(target: &Path) -> std::io::Result<()> {
     fn copy(glob: &str, target: &Path) -> std::io::Result<()> {
-        for entry in TEMPLATE_DIR.find(glob).unwrap() {
+        for entry in SRC_DIR.find(glob).unwrap() {
             if let Some(file) = entry.as_file() {
                 let rel_path = file.path();
                 let dest_path = target.join(rel_path);
@@ -58,27 +60,29 @@ fn copy_template(target: &Path) -> std::io::Result<()> {
         Ok(())
     }
 
-    fn copy_file(src: &str, target: &Path) -> std::io::Result<()> {
-        let file = TEMPLATE_DIR
+    fn copy_to(src: &str, target: &Path) -> std::io::Result<()> {
+        let file = SRC_DIR
             .get_file(src)
-            .expect("file should exist in template directory");
+            .expect(format!("file should exist in template directory: {}", src).as_str());
         if let Some(parent) = target.parent() {
             fs::create_dir_all(parent)?;
         }
         fs::write(target, file.contents())
     }
 
-    // For testing purposes, template directory may contain `target` and
-    // `Cargo.lock` files. They are ignored by the glob patterns.
-    copy("src/**/*", target)?;
-    copy_file("Cargo.toml.orig", target.join("Cargo.toml").as_path())?;
+
+    // Copy the necessary library files for contest project.
+    copy("lib.rs", &target.join("src"))?;
+    copy("io/**/*", &target.join("src"))?;
+
+    // Copy files from root directory.
+    fs::write(target.join("rustfmt.toml"), RUSTFMT_TOML)?;
+    fs::write(target.join("Cargo.toml"), TPL_CARGO_TOML)?;
 
     // Make copies of `src/bin/a.rs` file.
-    for letter in 'b'..='h' {
-        copy_file(
-            "src/bin/a.rs",
-            target.join(format!("src/bin/{}.rs", letter)).as_path(),
-        )?;
+    // This is to create files for problems a-h.
+    for letter in 'a'..='h' {
+        copy_to("bin/a.rs", &target.join(format!("src/bin/{}.rs", letter)))?;
     }
 
     Ok(())

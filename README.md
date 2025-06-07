@@ -30,8 +30,6 @@ cargo algorist new <contest_id>
 This will create Rust project in `contest-<contest_id>` directory with all the necessary problem and
 algorithm modules copied into it.
 
-
-
 ## License
 
 MIT

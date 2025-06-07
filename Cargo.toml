@@ -1,6 +1,6 @@
 [package]
 name = "algorist"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2024"
 license = "MIT"
 authors = ["Victor Farazdagi <farazdagi@gmail.com>"]
@@ -11,7 +11,7 @@ documentation = "https://docs.rs/algorist"
 readme = "README.md"
 keywords = ["algorithms", "data-structures", "codeforces"]
 categories = ["algorithms", "data-structures"]
-include = ["src/**", "Cargo.toml", "Cargo.lock", "crates/template/**"]
+default-run = "cargo-algorist"
 
 [[bin]]
 name = "cargo-algorist"

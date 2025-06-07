@@ -7,11 +7,8 @@
 
 Helper tools, algorithms and data structures for competitive programming.
 
-## Motivation
-
-To provide a collection of algorithms and data structures that are commonly used in competitive
-programming, with necessary helper tools to test and bundle files into single output file -- which
-is expected in competitive programming.
+Algorist is both a CLI tool for managing algorithm contests AND a collection of useful algorithms
+and data structures for competitive programming.
 
 ## Installation
 
@@ -21,17 +18,19 @@ The crate provides cargo sub-command `algorist`, which can be installed using:
 cargo install algorist
 ```
 
-NB: The crate is also a library of algorithms and data structures, which will be copied into your
-contest project (see Usage section). Check the [documentation](https://docs.rs/algorist) for more
-details.
+Once installed, you can use it as `cargo algorist`.
 
 ## Usage
 
-Basic usage pattern:
+When contesting, you will normally have a set of problems to solve, each of which is identified by a
+problem ID (usually a letter from `a` to `h`). Each problem will have its own source file, and while
+that file can use any number of additional modules, it is expected that the final submission is a
+single file that contains all the necessary code to solve the problem.
 
-- Create new contest project (which is a normal Rust project, with some additional files)
-- Work on a given problem, using conventional Cargo machinery to run/test
-- Once happy, bundle the project into a single output file, which is expected by the contest system
+The `algorist` CLI tool provides a way to create a new contest project, which is a normal Rust
+project, use additional modules with common algorithms and data structures, and then bundle each
+problem into a single output file that can be submitted to the contest system (only modules actually
+used will be bundled, not all available data structures and algorithms).
 
 ### Create a new contest project
 
@@ -46,9 +45,54 @@ cargo algorist new <contest_id>
 This will create Rust project in `contest-<contest_id>` directory with all the necessary problem and
 algorithm modules copied into it.
 
+The project structure will look like this:
+
+``` text
+contest-4545
+├── src
+│   ├── lib.rs
+│   ├── io
+│   │   └── mod.rs
+│   │   ... some additional modules
+│   └── bin
+│       ├── h.rs
+│       ├── g.rs
+│       ├── f.rs
+│       ├── e.rs
+│       ├── d.rs
+│       ├── c.rs
+│       ├── b.rs
+│       └── a.rs
+├── rustfmt.toml
+├── Cargo.toml
+└── Cargo.lock
+
+```
+
 ### Work on a problem
 
 All problems are located in `src/bin/<problem_id>.rs` file, where `<problem_id>` is one of `a..h`.
+The file will contain entry point `main` function, which is expected to read input from standard
+input and write output to standard output:
+
+``` rust
+use std::io::{self, Write};
+use algorist::io::{Scanner, wln};
+
+fn main() {
+    let mut scan = Scanner::new(io::stdin().lock());
+    let mut w = io::BufWriter::new(io::stdout().lock());
+
+    scan.test_cases(&mut |scan| {
+        let n = scan.u();
+        let vals: Vec<i32> = scan.vec(n);
+
+        let ans = vals.len();
+        wln!(w, "{}", ans);
+    });
+}
+
+```
 
 To test a problem, you can use:
 
@@ -56,14 +100,16 @@ To test a problem, you can use:
 cargo test --bin <problem_id>
 ```
 
-See the [documentation](https://docs.rs/algorist) on `io` module for more details on the default
-code provided in problem files.
+See the [`documentation`](https://docs.rs/algorist/latest/algorist/io/) on `io` module for more
+details on the default code provided in problem files.
 
 ### Bundle the project
 
-Contest systems expect a single output file, which is normally a binary executable. To bundle the
-problem which you are working on, and which might include various additional modules (at the very
-least `io` module is included), in a single output file, you can use:
+Contest systems expect a single output file, where all used modules are packed within the scope of
+that file.
+
+To bundle the problem which you are working on, and which might include various additional modules
+(at the very least `io` module is included), in a single output file, you can use:
 
 ``` bash
 cargo algorist bundle <problem_id>
@@ -71,6 +117,20 @@ cargo algorist bundle <problem_id>
 
 This will create a single output file in `bundled/<problem_id>.rs` file, which can be submitted to
 the contest system.
+
+Note that while the library provides a lot of algorithms and data structures, only those actually
+used in the problem will be included in the output file, so the final file will be as concise and
+readable as possible (it is NOT just a dump of everything).
+
+## Included algorithms and data structures
+
+The crate is also a library of algorithms and data structures, which will be copied into your
+contest project, and can be used in your problem files.
+
+Included modules:
+
+- [`io`](https://docs.rs/algorist/latest/algorist/io/) - input/output helpers, including `Scanner`
+  for reading input and `wln!` macro for writing output.
 
 ## License
 

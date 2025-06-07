@@ -12,6 +12,7 @@ use {
 static SRC_DIR: Dir = include_dir!("$CARGO_MANIFEST_DIR/src");
 static TPL_CARGO_TOML: &str = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/Cargo.toml.tpl"));
 static RUSTFMT_TOML: &str = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/rustfmt.toml"));
+static README_MD: &str = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/README.md"));
 
 /// Create a new contest project with the given contest ID.
 /// It creates a directory structure and necessary Rust files for the contest.
@@ -70,7 +71,6 @@ fn copy_template(target: &Path) -> std::io::Result<()> {
         fs::write(target, file.contents())
     }
 
-
     // Copy the necessary library files for contest project.
     copy("lib.rs", &target.join("src"))?;
     copy("io/**/*", &target.join("src"))?;
@@ -78,6 +78,7 @@ fn copy_template(target: &Path) -> std::io::Result<()> {
     // Copy files from root directory.
     fs::write(target.join("rustfmt.toml"), RUSTFMT_TOML)?;
     fs::write(target.join("Cargo.toml"), TPL_CARGO_TOML)?;
+    fs::write(target.join("README.md"), README_MD)?;
 
     // Make copies of `src/bin/a.rs` file.
     // This is to create files for problems a-h.

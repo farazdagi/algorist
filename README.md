@@ -129,7 +129,7 @@ readable as possible (it is NOT just a dump of everything).
 The crate is also a library of algorithms and data structures, which will be copied into your
 contest project, and can be used in your problem files.
 
-See [`Modules`](#modules) section in the documentation for a complete list of available modules.
+See [`Modules`](https://docs.rs/algorist/latest/algorist/#modules) section in the documentation for a complete list of available modules.
 
 ## License
 

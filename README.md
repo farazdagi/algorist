@@ -7,8 +7,8 @@
 
 Helper tools, algorithms and data structures for competitive programming.
 
-Algorist is both a CLI tool for managing algorithm contests AND a collection of useful algorithms
-and data structures for competitive programming.
+Algorist is both a CLI tool for managing programming contest projects AND a collection of useful
+algorithms and data structures to use in those projects.
 
 ## Installation
 

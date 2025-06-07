@@ -2,6 +2,12 @@ use std::collections::VecDeque;
 use std::io::prelude::*;
 
 /// Scanner reads buffered input and parses it into tokens.
+///
+/// Scanner is designed to read input efficiently, and provides methods to parse
+/// various types of data, such as integers, strings, and vectors.
+///
+/// It supports reading multiple test cases, allowing to focus on a single test
+/// case input at a time (see [`Scanner::test_cases`]).
 pub struct Scanner<R> {
     reader: R,
     buffer: Vec<u8>,
@@ -9,6 +15,7 @@ pub struct Scanner<R> {
 }
 
 impl<R: BufRead> Scanner<R> {
+    /// Creates a new `Scanner` instance with the given reader.
     pub fn new(reader: R) -> Self {
         Self {
             reader,
@@ -17,6 +24,32 @@ impl<R: BufRead> Scanner<R> {
         }
     }
 
+    /// Reads the next token from the input, parsing it into the specified `T`.
+    ///
+    /// This method will read until a newline character is encountered, then
+    /// split the line into whitespace-separated tokens, and traverse the
+    /// iterator.
+    ///
+    /// It will return the next token as type `T`.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use std::io::BufReader;
+    ///
+    /// use algorist::io::Scanner;
+    ///
+    /// fn main() {
+    ///     let input = b"42 3.14 hello\n";
+    ///     let mut scan = Scanner::new(BufReader::new(input.as_ref()));
+    ///     let x: i32 = scan.next();
+    ///     let y: f64 = scan.next();
+    ///     let s: String = scan.next();
+    ///     assert_eq!(x, 42);
+    ///     assert_eq!(y, 3.14);
+    ///     assert_eq!(s, "hello");
+    /// }
+    /// ```
     pub fn next<T: std::str::FromStr>(&mut self) -> T {
         loop {
             if let Some(token) = self.iter.next() {
@@ -34,6 +67,32 @@ impl<R: BufRead> Scanner<R> {
         }
     }
 
+    /// Reads multiple test cases from the input, applying the provided function
+    /// `f` to each test case.
+    ///
+    /// Normally, in contest problems, the first token read is the number of
+    /// test cases `t`, and the function `f` is called `t` times, allowing
+    /// you to process each test case individually.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use std::io::BufReader;
+    ///
+    /// use algorist::io::Scanner;
+    ///
+    /// fn main() {
+    ///     let input = b"2\n1 2\n3 4\n";
+    ///     let mut scan = Scanner::new(BufReader::new(input.as_ref()));
+    ///     let mut sum = 0;
+    ///     scan.test_cases(&mut |scan| {
+    ///         let x: i32 = scan.next();
+    ///         let y: i32 = scan.next();
+    ///         sum += x + y;
+    ///     });
+    ///     assert_eq!(sum, 10);
+    /// }
+    /// ```
     pub fn test_cases<F: FnMut(&mut Self)>(&mut self, f: &mut F) {
         let t = self.u();
         for _ in 0..t {
@@ -41,64 +100,165 @@ impl<R: BufRead> Scanner<R> {
         }
     }
 
+    /// Reads the next token as a `usize`.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use std::io::BufReader;
+    ///
+    /// use algorist::io::Scanner;
+    ///
+    /// fn main() {
+    ///     let input = b"42\n";
+    ///     let mut scan = Scanner::new(BufReader::new(input.as_ref()));
+    ///     let x: usize = scan.u();
+    ///     assert_eq!(x, 42);
+    /// }
+    /// ```
     pub fn u(&mut self) -> usize {
         self.next()
     }
 
+    /// Reads pair of `usize` values.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use std::io::BufReader;
+    ///
+    /// use algorist::io::Scanner;
+    ///
+    /// fn main() {
+    ///     let input = b"42 43\n";
+    ///     let mut scan = Scanner::new(BufReader::new(input.as_ref()));
+    ///     let (x, y): (usize, usize) = scan.u2();
+    ///     assert_eq!(x, 42);
+    ///     assert_eq!(y, 43);
+    /// }
+    /// ```
     pub fn u2(&mut self) -> (usize, usize) {
         (self.u(), self.u())
     }
 
+    /// Reads triplet of `usize` values.
+    ///
+    /// See also [`u2`](Scanner::u2).
     pub fn u3(&mut self) -> (usize, usize, usize) {
         (self.u(), self.u(), self.u())
     }
 
+    /// Reads quadruplet of `usize` values.
+    ///
+    /// See also [`u2`](Scanner::u2).
     pub fn u4(&mut self) -> (usize, usize, usize, usize) {
         (self.u(), self.u(), self.u(), self.u())
     }
 
+    /// Reads the next token as an `i32`.
     pub fn i(&mut self) -> i32 {
         self.next()
     }
 
+    /// Reads pair of `i32` values.
     pub fn i2(&mut self) -> (i32, i32) {
         (self.i(), self.i())
     }
 
+    /// Reads triplet of `i32` values.
     pub fn i3(&mut self) -> (i32, i32, i32) {
         (self.i(), self.i(), self.i())
     }
 
+    /// Reads quadruplet of `i32` values.
     pub fn i4(&mut self) -> (i32, i32, i32, i32) {
         (self.i(), self.i(), self.i(), self.i())
     }
 
+    /// Reads pair of values of type `T`.
+    ///
+    /// # Example
+    /// ```
+    /// use std::io::BufReader;
+    ///
+    /// use algorist::io::Scanner;
+    /// fn main() {
+    ///     let input = b"1 2\n";
+    ///     let mut scan = Scanner::new(BufReader::new(input.as_ref()));
+    ///     let (x, y): (i32, i32) = scan.pair();
+    ///     assert_eq!(x + y, 3);
+    ///
+    ///     let input = b"foo bar\n";
+    ///     let mut scan = Scanner::new(BufReader::new(input.as_ref()));
+    ///     let (x, y): (String, String) = scan.pair();
+    ///     assert_eq!(x, "foo");
+    ///     assert_eq!(y, "bar");
+    /// }
+    /// ```
     pub fn pair<T: std::str::FromStr>(&mut self) -> (T, T) {
         (self.next(), self.next())
     }
 
+    /// Reads triplet of values of type `T`.
+    ///
+    /// See also [`pair`](Scanner::pair).
     pub fn triplet<T: std::str::FromStr>(&mut self) -> (T, T, T) {
         (self.next(), self.next(), self.next())
     }
 
+    /// Gets the next token as a `String`.
     pub fn string(&mut self) -> String {
         self.next()
     }
 
+    /// Gets the next token as `Vec<u8>`.
     pub fn bytes(&mut self) -> Vec<u8> {
         self.string().bytes().collect()
     }
 
+    /// Gets the next token as `Vec<char>`.
     pub fn chars(&mut self) -> Vec<char> {
         self.string().chars().collect()
     }
 
+    /// Reads a vector of `T` from the input, where `n` is the number of
+    /// elements.
+    ///
+    /// # Example
+    /// ```
+    /// use std::io::BufReader;
+    ///
+    /// use algorist::io::Scanner;
+    ///
+    /// fn main() {
+    ///     let input = b"1 2 3\n";
+    ///     let mut scan = Scanner::new(BufReader::new(input.as_ref()));
+    ///     let v: Vec<i32> = scan.vec(3);
+    ///     assert_eq!(v, vec![1, 2, 3]);
+    /// }
+    /// ```
     pub fn vec<T: std::str::FromStr>(&mut self, n: usize) -> Vec<T> {
         let mut result = Vec::with_capacity(n);
         (0..n).for_each(|_| result.push(self.next()));
         result
     }
 
+    /// Reads a vector of `T` from the input, where `n` is the number of
+    /// elements, and the first element is a default value for `T`.
+    ///
+    /// # Example
+    /// ```
+    /// use std::io::BufReader;
+    ///
+    /// use algorist::io::Scanner;
+    ///
+    /// fn main() {
+    ///     let input = b"1 2 3\n";
+    ///     let mut scan = Scanner::new(BufReader::new(input.as_ref()));
+    ///     let v: Vec<i32> = scan.vec_padded(3);
+    ///     assert_eq!(v, vec![0, 1, 2, 3]);
+    /// }
+    /// ```
     pub fn vec_padded<T: std::str::FromStr + Default>(&mut self, n: usize) -> Vec<T> {
         let mut result = Vec::with_capacity(n + 1);
         result.push(T::default());
@@ -106,12 +266,46 @@ impl<R: BufRead> Scanner<R> {
         result
     }
 
+    /// Reads a `VecDeque<T>` from the input, where `n` is the number of
+    /// elements to read.
+    ///
+    /// # Example
+    /// ```
+    /// use std::collections::VecDeque;
+    /// use std::io::BufReader;
+    ///
+    /// use algorist::io::Scanner;
+    ///
+    /// fn main() {
+    ///     let input = b"1 2 3\n";
+    ///     let mut scan = Scanner::new(BufReader::new(input.as_ref()));
+    ///     let v: VecDeque<i32> = scan.vec_deque(3);
+    ///     assert_eq!(v, VecDeque::from(vec![1, 2, 3]));
+    /// }
+    /// ```
     pub fn vec_deque<T: std::str::FromStr>(&mut self, n: usize) -> VecDeque<T> {
         let mut result = VecDeque::with_capacity(n);
         (0..n).for_each(|_| result.push_back(self.next()));
         result
     }
 
+    /// Reads a `HashSet<T>` from the input, where `n` is the number of
+    /// elements to read.
+    ///
+    /// # Example
+    /// ```
+    /// use std::collections::HashSet;
+    /// use std::io::BufReader;
+    ///
+    /// use algorist::io::Scanner;
+    ///
+    /// fn main() {
+    ///     let input = b"1 2 3\n";
+    ///     let mut scan = Scanner::new(BufReader::new(input.as_ref()));
+    ///     let set: HashSet<i32> = scan.hash_set(3);
+    ///     assert_eq!(set, HashSet::from([1, 2, 3]));
+    /// }
+    /// ```
     pub fn hash_set<T: std::hash::Hash + std::cmp::Eq + std::str::FromStr>(
         &mut self,
         n: usize,
@@ -136,6 +330,27 @@ fn wv<W: Write, T: std::fmt::Display>(w: &mut W, v: &[T]) {
     .unwrap();
 }
 
+/// A macro for writing a line with formatted output.
+///
+/// Just like `writeln!()`, but with a shorter name, and no return value (so,
+/// now warning about unused result).
+///
+/// # Example
+/// ```
+/// use std::io::{self, Write};
+///
+/// use algorist::io::wln;
+///
+/// fn main() {
+///     let mut w = io::BufWriter::new(io::stdout().lock());
+///
+///     // Using more ergonomic `wln!` macro:
+///     wln!(w, "Hello, {}!", "world");
+///
+///     // Alternatively, using the `writeln!()` macro directly:
+///     let _ = writeln!(w, "Hello, {}!", "world");
+/// }
+/// ```
 #[macro_export]
 macro_rules! wln_impl {
     ($($es:expr),+) => {{

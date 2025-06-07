@@ -20,6 +20,8 @@ cargo install algorist
 
 Once installed, you can use it as `cargo algorist`.
 
+NB: No point in installing the crate as a library (except for development of the crate itself).
+
 ## Usage
 
 When contesting, you will normally have a set of problems to solve, each of which is identified by a
@@ -75,7 +77,7 @@ All problems are located in `src/bin/<problem_id>.rs` file, where `<problem_id>`
 The file will contain entry point `main` function, which is expected to read input from standard
 input and write output to standard output:
 
-``` rust
+``` rust, no_run
 use std::io::{self, Write};
 use algorist::io::{Scanner, wln};
 
@@ -127,10 +129,7 @@ readable as possible (it is NOT just a dump of everything).
 The crate is also a library of algorithms and data structures, which will be copied into your
 contest project, and can be used in your problem files.
 
-Included modules:
-
-- [`io`](https://docs.rs/algorist/latest/algorist/io/) - input/output helpers, including `Scanner`
-  for reading input and `wln!` macro for writing output.
+See [`Modules`](#modules) section in the documentation for a complete list of available modules.
 
 ## License
 

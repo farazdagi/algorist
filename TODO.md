@@ -1,5 +1,7 @@
 ## To Do
 
+- [ ] `.gitignore` (to ignore bundled)
+- [ ] `justfile` to minimize typing requirements
 - [ ] Document existing algorithms and data structures.
   - [ ] `math`
   - [ ] `ext`

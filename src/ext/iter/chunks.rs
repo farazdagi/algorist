@@ -11,7 +11,7 @@ where
     I: Iterator,
 {
     pub fn new(iter: I, chunk_size: usize) -> Self {
-        Self{ iter, chunk_size }
+        Self { iter, chunk_size }
     }
 }
 

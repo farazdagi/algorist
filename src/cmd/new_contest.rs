@@ -61,6 +61,7 @@ impl NewContestSubCmd {
         copy(&SRC_DIR, "ext/**/*", &target.join("src"))?;
         copy(&SRC_DIR, "math/**/*", &target.join("src"))?;
         copy(&SRC_DIR, "misc/**/*", &target.join("src"))?;
+        copy_to(&TPL_DIR, "lib.rs", &target.join("src/lib.rs"))?;
         copy_to(&TPL_DIR, "Cargo.toml.tpl", &target.join("Cargo.toml"))?;
         copy_to(&TPL_DIR, "README.md", &target.join("README.md"))?;
 

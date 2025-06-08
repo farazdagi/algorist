@@ -1,4 +1,7 @@
-#![doc = include_str!("../README.md")]
+//! # Algorist
+//!
+//! Helper tools, algorithms and data structures for competitive programming.
+
 #![allow(clippy::needless_doctest_main)]
 
 pub mod io;

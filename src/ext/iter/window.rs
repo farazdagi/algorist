@@ -17,8 +17,7 @@ pub trait SlidingWindowExt {
             .sliding_window()
             .try_fold(init, move |acc, (a, b)| f(acc, a, b))
         {
-            ControlFlow::Continue(acc) |
-            ControlFlow::Break(acc) => acc,
+            ControlFlow::Continue(acc) | ControlFlow::Break(acc) => acc,
         }
     }
 }

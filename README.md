@@ -36,18 +36,20 @@ used will be bundled, not all available data structures and algorithms).
 
 ### Create a new contest project
 
-To create a new contest project:
+To create a new contest project (`contest_id` will be normally contest number):
 
 ``` bash
 cargo algorist new <contest_id>
+
+# examples:
+cargo algorist new 4545
+cargo algorist new contests/4545 # sub-folders are also supported
 ```
 
-(`contest_id` will be normally contest number)
+This will create Rust project with all the necessary problem files and algorithm modules copied into
+it.
 
-This will create Rust project in `contest-<contest_id>` directory with all the necessary problem and
-algorithm modules copied into it.
-
-The project structure will look like this:
+The project structure will look something like this:
 
 ``` text
 contest-4545
@@ -55,27 +57,40 @@ contest-4545
 │   ├── lib.rs
 │   ├── io
 │   │   └── mod.rs
-│   │   ... some additional modules
+│   │   ... some additional modules (math, collections etc)
 │   └── bin
-│       ├── h.rs
-│       ├── g.rs
-│       ├── f.rs
-│       ├── e.rs
-│       ├── d.rs
-│       ├── c.rs
+│       ├── a.rs
 │       ├── b.rs
-│       └── a.rs
+│       ├── c.rs
+│       ├── d.rs
+│       ├── e.rs
+│       ├── f.rs
+│       ├── g.rs
+│       └── h.rs
 ├── rustfmt.toml
 ├── Cargo.toml
 └── Cargo.lock
 
 ```
 
+If you don't want to have initial problem files, you can create a new contest project with `--empty`
+flag:
+
+``` bash
+cargo algorist new <contest_id> --empty
+```
+
+Later, you can always add problems into `src/bin` directory using:
+
+``` bash
+cargo algorist add <problem_id>
+```
+
 ### Work on a problem
 
-All problems are located in `src/bin/<problem_id>.rs` file, where `<problem_id>` is one of `a..h`.
-The file will contain entry point `main` function, which is expected to read input from standard
-input and write output to standard output:
+All problems are located in `src/bin/<problem_id>.rs` files. The file will contain entry point
+`main` function, which is expected to read input from standard input and write output to standard
+output:
 
 ``` rust, no_run
 use std::io::{self, Write};
@@ -96,14 +111,21 @@ fn main() {
 
 ```
 
-To test a problem, you can use:
+To test a problem, you can use (again, it is a normal Rust project, so you can use all the usual
+machinery):
 
 ``` bash
 cargo test --bin <problem_id>
 ```
 
-See the [`documentation`](https://docs.rs/algorist/latest/algorist/io/) on `io` module for more
+NB: See the [`documentation`](https://docs.rs/algorist/latest/algorist/io/) on `io` module for more
 details on the default code provided in problem files.
+
+To add new problem file into `src/bin` directory, use:
+
+``` bash
+cargo algorist add <problem_id>
+```
 
 ### Bundle the project
 
@@ -129,8 +151,13 @@ readable as possible (it is NOT just a dump of everything).
 The crate is also a library of algorithms and data structures, which will be copied into your
 contest project, and can be used in your problem files.
 
+| Module | Description |
+| --- | --- |
+| [`io`](https://docs.rs/algorist/latest/algorist/io/) | Input/output helpers, including `Scanner` for reading input and `wln!` macro for writing output. |
+
 See [`Modules`](https://docs.rs/algorist/latest/algorist/#modules) section in the documentation for
 a complete list of available modules.
+
 
 ## License
 

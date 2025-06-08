@@ -14,18 +14,18 @@ use {
 /// Bundle given problem into a single file.
 #[derive(FromArgs, PartialEq, Debug)]
 #[argh(subcommand, name = "bundle")]
-pub struct BundleSubCmd {
+pub struct BundleProblemSubCmd {
     #[argh(positional)]
     /// problem ID
-    id: char,
+    id: String,
 }
 
-impl SubCmd for BundleSubCmd {
+impl SubCmd for BundleProblemSubCmd {
     fn run(&self) -> Result<()> {
         // Validate the problem ID.
         let src = PathBuf::from(format!("./src/bin/{}.rs", self.id))
             .canonicalize()
-            .context("failed to canonicalize source path")?;
+            .context("source file for the problem is not found")?;
 
         // Create the destination directory if it doesn't exist.
         fs::create_dir_all(PathBuf::from("bundled"))?;

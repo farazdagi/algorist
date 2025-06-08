@@ -1,7 +1,14 @@
-pub mod bundle;
+pub mod add_problem;
+pub mod bundle_problem;
 pub mod new_contest;
 
-use {anyhow::Result, argh::FromArgs, bundle::BundleSubCmd, new_contest::NewSubCmd};
+use add_problem::AddProblemSubCmd;
+use {
+    anyhow::Result,
+    argh::FromArgs,
+    bundle_problem::BundleProblemSubCmd,
+    new_contest::NewContestSubCmd,
+};
 
 pub trait SubCmd {
     fn run(&self) -> anyhow::Result<()>;
@@ -18,8 +25,9 @@ pub struct MainCmd {
 #[derive(FromArgs, PartialEq, Debug)]
 #[argh(subcommand)]
 enum TopLevelCmdEnum {
-    New(NewSubCmd),
-    Bundle(BundleSubCmd),
+    New(NewContestSubCmd),
+    Bundle(BundleProblemSubCmd),
+    Add(AddProblemSubCmd),
 }
 
 impl MainCmd {
@@ -28,6 +36,7 @@ impl MainCmd {
         match &self.nested {
             TopLevelCmdEnum::New(new_cmd) => new_cmd.run(),
             TopLevelCmdEnum::Bundle(bundle_cmd) => bundle_cmd.run(),
+            TopLevelCmdEnum::Add(add_cmd) => add_cmd.run(),
         }
     }
 }

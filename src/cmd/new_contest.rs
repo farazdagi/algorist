@@ -10,34 +10,34 @@ use {
 };
 
 static SRC_DIR: Dir = include_dir!("$CARGO_MANIFEST_DIR/src");
-static TPL_DIR: Dir = include_dir!("$CARGO_MANIFEST_DIR/tpl");
+pub(crate) static TPL_DIR: Dir = include_dir!("$CARGO_MANIFEST_DIR/tpl");
 static RUSTFMT_TOML: &str = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/rustfmt.toml"));
 
-/// Create a new contest project with the given contest ID.
-/// It creates a directory structure and necessary Rust files for the contest.
+/// Create a new contest project.
 #[derive(FromArgs, PartialEq, Debug)]
 #[argh(subcommand, name = "new")]
-pub struct NewSubCmd {
+pub struct NewContestSubCmd {
     #[argh(positional)]
     /// contest ID
     id: String,
 
     #[argh(switch)]
-    /// no problems will be added to the contest, only the directory structure
-    /// will be created
-    no_problems: bool,
+    /// no problems will be added to the contest, use `add` command to add
+    /// problems later
+    empty: bool,
 }
 
-impl SubCmd for NewSubCmd {
+impl SubCmd for NewContestSubCmd {
     fn run(&self) -> Result<()> {
         let root_dir = PathBuf::from("./")
             .canonicalize()
             .context("failed to canonicalize root directory path")?
-            .join(format!("contest-{}", self.id));
+            .join(format!("{}", self.id));
 
+        // Ensure that the root directory does not already exist.
         // Create "src" directory for the contest (if it doesn't exist).
         let src_dir = root_dir.join("src");
-        if src_dir.exists() {
+        if root_dir.exists() || src_dir.exists() {
             return Err(anyhow!("Directory already exists: {:?}", root_dir));
         }
         fs::create_dir_all(src_dir)?;
@@ -51,32 +51,8 @@ impl SubCmd for NewSubCmd {
     }
 }
 
-impl NewSubCmd {
+impl NewContestSubCmd {
     fn copy_template(&self, target: &Path) -> std::io::Result<()> {
-        fn copy(dir: &Dir, glob: &str, target: &Path) -> std::io::Result<()> {
-            for entry in dir.find(glob).unwrap() {
-                if let Some(file) = entry.as_file() {
-                    let rel_path = file.path();
-                    let dest_path = target.join(rel_path);
-                    if let Some(parent) = dest_path.parent() {
-                        fs::create_dir_all(parent)?;
-                    }
-                    fs::write(dest_path, file.contents())?;
-                }
-            }
-            Ok(())
-        }
-
-        fn copy_to(dir: &Dir, src: &str, target: &Path) -> std::io::Result<()> {
-            let file = dir
-                .get_file(src)
-                .expect(format!("file should exist in template directory: {}", src).as_str());
-            if let Some(parent) = target.parent() {
-                fs::create_dir_all(parent)?;
-            }
-            fs::write(target, file.contents())
-        }
-
         // Copy the necessary library files for contest project.
         println!("Copying template files to the contest directory...");
         copy(&SRC_DIR, "lib.rs", &target.join("src"))?;
@@ -92,7 +68,7 @@ impl NewSubCmd {
         fs::write(target.join("rustfmt.toml"), RUSTFMT_TOML)?;
 
         // Create files for problems a-h.
-        if !self.no_problems {
+        if !self.empty {
             println!("Adding problems a-h to the contest...");
             for letter in 'a'..='h' {
                 copy_to(
@@ -105,4 +81,28 @@ impl NewSubCmd {
 
         Ok(())
     }
+}
+
+pub(crate) fn copy(dir: &Dir, glob: &str, target: &Path) -> std::io::Result<()> {
+    for entry in dir.find(glob).unwrap() {
+        if let Some(file) = entry.as_file() {
+            let rel_path = file.path();
+            let dest_path = target.join(rel_path);
+            if let Some(parent) = dest_path.parent() {
+                fs::create_dir_all(parent)?;
+            }
+            fs::write(dest_path, file.contents())?;
+        }
+    }
+    Ok(())
+}
+
+pub(crate) fn copy_to(dir: &Dir, src: &str, target: &Path) -> std::io::Result<()> {
+    let file = dir
+        .get_file(src)
+        .expect(format!("file should exist in template directory: {}", src).as_str());
+    if let Some(parent) = target.parent() {
+        fs::create_dir_all(parent)?;
+    }
+    fs::write(target, file.contents())
 }

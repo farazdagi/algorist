@@ -40,7 +40,5 @@ pub mod ext;
 /// Mathematical utilities.
 pub mod math;
 
-
 /// Miscellaneous utilities.
 pub mod misc;
-

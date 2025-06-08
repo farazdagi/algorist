@@ -64,6 +64,7 @@ impl NewContestSubCmd {
         copy_to(&TPL_DIR, "lib.rs", &target.join("src/lib.rs"))?;
         copy_to(&TPL_DIR, "Cargo.toml.tpl", &target.join("Cargo.toml"))?;
         copy_to(&TPL_DIR, "README.md", &target.join("README.md"))?;
+        copy_to(&TPL_DIR, ".gitignore", &target.join(".gitignore"))?;
 
         // Copy files from root directory.
         fs::write(target.join("rustfmt.toml"), RUSTFMT_TOML)?;

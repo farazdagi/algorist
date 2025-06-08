@@ -84,6 +84,10 @@ Later, you can always add problems into `src/bin` directory using:
 
 ``` bash
 cargo algorist add <problem_id>
+
+# examples:
+cargo algorist add a        # `.rs` is not required
+cargo algorist add a.rs     # same as above
 ```
 
 ### Work on a problem
@@ -116,10 +120,17 @@ machinery):
 
 ``` bash
 cargo test --bin <problem_id>
+
+# alias pbpaste=’xsel — clipboard — output’ on Linux
+pbpaste | cargo run --bin <problem_id>   # run with input from clipboard
+cargo run --bin <problem_id> < input.txt # run with input from file
 ```
 
 NB: See the [`documentation`](https://docs.rs/algorist/latest/algorist/io/) on `io` module for more
 details on the default code provided in problem files.
+
+Once you are happy with your solution, you can submit it to the contest system (by bundling into a
+single file).
 
 To add new problem file into `src/bin` directory, use:
 
@@ -157,7 +168,6 @@ contest project, and can be used in your problem files.
 
 See [`Modules`](https://docs.rs/algorist/latest/algorist/#modules) section in the documentation for
 a complete list of available modules.
-
 
 ## License
 

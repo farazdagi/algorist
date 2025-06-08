@@ -39,16 +39,14 @@ impl<R: BufRead> Scanner<R> {
     ///
     /// use algorist::io::Scanner;
     ///
-    /// fn main() {
-    ///     let input = b"42 3.14 hello\n";
-    ///     let mut scan = Scanner::new(BufReader::new(input.as_ref()));
-    ///     let x: i32 = scan.next();
-    ///     let y: f64 = scan.next();
-    ///     let s: String = scan.next();
-    ///     assert_eq!(x, 42);
-    ///     assert_eq!(y, 3.14);
-    ///     assert_eq!(s, "hello");
-    /// }
+    /// let input = b"42 3.14 hello\n";
+    /// let mut scan = Scanner::new(BufReader::new(input.as_ref()));
+    /// let x: i32 = scan.next();
+    /// let y: f64 = scan.next();
+    /// let s: String = scan.next();
+    /// assert_eq!(x, 42);
+    /// assert_eq!(y, 3.14);
+    /// assert_eq!(s, "hello");
     /// ```
     pub fn next<T: std::str::FromStr>(&mut self) -> T {
         loop {
@@ -81,17 +79,15 @@ impl<R: BufRead> Scanner<R> {
     ///
     /// use algorist::io::Scanner;
     ///
-    /// fn main() {
-    ///     let input = b"2\n1 2\n3 4\n";
-    ///     let mut scan = Scanner::new(BufReader::new(input.as_ref()));
-    ///     let mut sum = 0;
-    ///     scan.test_cases(&mut |scan| {
-    ///         let x: i32 = scan.next();
-    ///         let y: i32 = scan.next();
-    ///         sum += x + y;
-    ///     });
-    ///     assert_eq!(sum, 10);
-    /// }
+    /// let input = b"2\n1 2\n3 4\n";
+    /// let mut scan = Scanner::new(BufReader::new(input.as_ref()));
+    /// let mut sum = 0;
+    /// scan.test_cases(&mut |scan| {
+    ///     let x: i32 = scan.next();
+    ///     let y: i32 = scan.next();
+    ///     sum += x + y;
+    /// });
+    /// assert_eq!(sum, 10);
     /// ```
     pub fn test_cases<F: FnMut(&mut Self)>(&mut self, f: &mut F) {
         let t = self.u();
@@ -109,12 +105,10 @@ impl<R: BufRead> Scanner<R> {
     ///
     /// use algorist::io::Scanner;
     ///
-    /// fn main() {
-    ///     let input = b"42\n";
-    ///     let mut scan = Scanner::new(BufReader::new(input.as_ref()));
-    ///     let x: usize = scan.u();
-    ///     assert_eq!(x, 42);
-    /// }
+    /// let input = b"42\n";
+    /// let mut scan = Scanner::new(BufReader::new(input.as_ref()));
+    /// let x: usize = scan.u();
+    /// assert_eq!(x, 42);
     /// ```
     pub fn u(&mut self) -> usize {
         self.next()
@@ -129,13 +123,11 @@ impl<R: BufRead> Scanner<R> {
     ///
     /// use algorist::io::Scanner;
     ///
-    /// fn main() {
-    ///     let input = b"42 43\n";
-    ///     let mut scan = Scanner::new(BufReader::new(input.as_ref()));
-    ///     let (x, y): (usize, usize) = scan.u2();
-    ///     assert_eq!(x, 42);
-    ///     assert_eq!(y, 43);
-    /// }
+    /// let input = b"42 43\n";
+    /// let mut scan = Scanner::new(BufReader::new(input.as_ref()));
+    /// let (x, y): (usize, usize) = scan.u2();
+    /// assert_eq!(x, 42);
+    /// assert_eq!(y, 43);
     /// ```
     pub fn u2(&mut self) -> (usize, usize) {
         (self.u(), self.u())
@@ -182,18 +174,17 @@ impl<R: BufRead> Scanner<R> {
     /// use std::io::BufReader;
     ///
     /// use algorist::io::Scanner;
-    /// fn main() {
-    ///     let input = b"1 2\n";
-    ///     let mut scan = Scanner::new(BufReader::new(input.as_ref()));
-    ///     let (x, y): (i32, i32) = scan.pair();
-    ///     assert_eq!(x + y, 3);
     ///
-    ///     let input = b"foo bar\n";
-    ///     let mut scan = Scanner::new(BufReader::new(input.as_ref()));
-    ///     let (x, y): (String, String) = scan.pair();
-    ///     assert_eq!(x, "foo");
-    ///     assert_eq!(y, "bar");
-    /// }
+    /// let input = b"1 2\n";
+    /// let mut scan = Scanner::new(BufReader::new(input.as_ref()));
+    /// let (x, y): (i32, i32) = scan.pair();
+    /// assert_eq!(x + y, 3);
+    ///
+    /// let input = b"foo bar\n";
+    /// let mut scan = Scanner::new(BufReader::new(input.as_ref()));
+    /// let (x, y): (String, String) = scan.pair();
+    /// assert_eq!(x, "foo");
+    /// assert_eq!(y, "bar");
     /// ```
     pub fn pair<T: std::str::FromStr>(&mut self) -> (T, T) {
         (self.next(), self.next())
@@ -230,12 +221,10 @@ impl<R: BufRead> Scanner<R> {
     ///
     /// use algorist::io::Scanner;
     ///
-    /// fn main() {
-    ///     let input = b"1 2 3\n";
-    ///     let mut scan = Scanner::new(BufReader::new(input.as_ref()));
-    ///     let v: Vec<i32> = scan.vec(3);
-    ///     assert_eq!(v, vec![1, 2, 3]);
-    /// }
+    /// let input = b"1 2 3\n";
+    /// let mut scan = Scanner::new(BufReader::new(input.as_ref()));
+    /// let v: Vec<i32> = scan.vec(3);
+    /// assert_eq!(v, vec![1, 2, 3]);
     /// ```
     pub fn vec<T: std::str::FromStr>(&mut self, n: usize) -> Vec<T> {
         let mut result = Vec::with_capacity(n);
@@ -252,12 +241,10 @@ impl<R: BufRead> Scanner<R> {
     ///
     /// use algorist::io::Scanner;
     ///
-    /// fn main() {
-    ///     let input = b"1 2 3\n";
-    ///     let mut scan = Scanner::new(BufReader::new(input.as_ref()));
-    ///     let v: Vec<i32> = scan.vec_padded(3);
-    ///     assert_eq!(v, vec![0, 1, 2, 3]);
-    /// }
+    /// let input = b"1 2 3\n";
+    /// let mut scan = Scanner::new(BufReader::new(input.as_ref()));
+    /// let v: Vec<i32> = scan.vec_padded(3);
+    /// assert_eq!(v, vec![0, 1, 2, 3]);
     /// ```
     pub fn vec_padded<T: std::str::FromStr + Default>(&mut self, n: usize) -> Vec<T> {
         let mut result = Vec::with_capacity(n + 1);
@@ -276,12 +263,10 @@ impl<R: BufRead> Scanner<R> {
     ///
     /// use algorist::io::Scanner;
     ///
-    /// fn main() {
-    ///     let input = b"1 2 3\n";
-    ///     let mut scan = Scanner::new(BufReader::new(input.as_ref()));
-    ///     let v: VecDeque<i32> = scan.vec_deque(3);
-    ///     assert_eq!(v, VecDeque::from(vec![1, 2, 3]));
-    /// }
+    /// let input = b"1 2 3\n";
+    /// let mut scan = Scanner::new(BufReader::new(input.as_ref()));
+    /// let v: VecDeque<i32> = scan.vec_deque(3);
+    /// assert_eq!(v, VecDeque::from(vec![1, 2, 3]));
     /// ```
     pub fn vec_deque<T: std::str::FromStr>(&mut self, n: usize) -> VecDeque<T> {
         let mut result = VecDeque::with_capacity(n);
@@ -299,12 +284,10 @@ impl<R: BufRead> Scanner<R> {
     ///
     /// use algorist::io::Scanner;
     ///
-    /// fn main() {
-    ///     let input = b"1 2 3\n";
-    ///     let mut scan = Scanner::new(BufReader::new(input.as_ref()));
-    ///     let set: HashSet<i32> = scan.hash_set(3);
-    ///     assert_eq!(set, HashSet::from([1, 2, 3]));
-    /// }
+    /// let input = b"1 2 3\n";
+    /// let mut scan = Scanner::new(BufReader::new(input.as_ref()));
+    /// let set: HashSet<i32> = scan.hash_set(3);
+    /// assert_eq!(set, HashSet::from([1, 2, 3]));
     /// ```
     pub fn hash_set<T: std::hash::Hash + std::cmp::Eq + std::str::FromStr>(
         &mut self,
@@ -341,15 +324,13 @@ fn wv<W: Write, T: std::fmt::Display>(w: &mut W, v: &[T]) {
 ///
 /// use algorist::io::wln;
 ///
-/// fn main() {
-///     let mut w = io::BufWriter::new(io::stdout().lock());
+/// let mut w = io::BufWriter::new(io::stdout().lock());
 ///
-///     // Using more ergonomic `wln!` macro:
-///     wln!(w, "Hello, {}!", "world");
+/// // Using more ergonomic `wln!` macro:
+/// wln!(w, "Hello, {}!", "world");
 ///
-///     // Alternatively, using the `writeln!()` macro directly:
-///     let _ = writeln!(w, "Hello, {}!", "world");
-/// }
+/// // Alternatively, using the `writeln!()` macro directly:
+/// let _ = writeln!(w, "Hello, {}!", "world");
 /// ```
 #[macro_export]
 macro_rules! wln_impl {

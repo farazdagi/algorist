@@ -16,6 +16,22 @@ pub struct Scanner<R> {
 
 impl<R: BufRead> Scanner<R> {
     /// Creates a new `Scanner` instance with the given reader.
+    ///
+    /// # Example
+    /// ``` no_run
+    /// use std::io::{self, BufReader, Write};
+    ///
+    /// use algorist::io::Scanner;
+    ///
+    /// // Read from standard input.
+    /// let mut scan = Scanner::new(io::stdin().lock());
+    ///
+    /// // Write to standard output.
+    /// let mut w = io::BufWriter::new(io::stdout().lock());
+    ///
+    /// let n: u16 = scan.next(); // Reads the next token as a `u16`.
+    /// writeln!(w, "{}", n).unwrap(); // Writes the value to output.
+    /// ```
     pub fn new(reader: R) -> Self {
         Self {
             reader,

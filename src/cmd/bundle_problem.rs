@@ -39,7 +39,7 @@ impl SubCmd for BundleProblemSubCmd {
             .context(format!("failed to bundle problem {}", self.id))?;
 
         println!(
-            "Problem {} bundled successfully into {:?}",
+            "Problem {:?} bundled successfully into {:?}",
             self.id, bundler.dst
         );
 

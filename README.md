@@ -122,8 +122,8 @@ machinery):
 cargo test --bin <problem_id>
 
 # alias pbpaste=’xsel — clipboard — output’ on Linux
-pbpaste | cargo run --bin <problem_id>   # run with input from clipboard
-cargo run --bin <problem_id> < input.txt # run with input from file
+pbpaste | cargo run --bin <problem_id>   # gets input from clipboard
+cargo run --bin <problem_id> < input.txt # gets input from file
 ```
 
 NB: See the [`documentation`](https://docs.rs/algorist/latest/algorist/io/) on `io` module for more

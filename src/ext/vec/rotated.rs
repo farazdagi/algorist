@@ -1,5 +1,8 @@
 pub trait Rotated {
+    #[must_use]
     fn rotated_left(self, k: usize) -> Self;
+
+    #[must_use]
     fn rotated_right(self, k: usize) -> Self;
 }
 
@@ -18,13 +21,13 @@ impl<T> Rotated for Vec<T> {
 #[cfg(test)]
 mod tests {
     use super::*;
-   
+
     #[test]
     fn test_rotated_left() {
         let v = vec![1, 2, 3, 4, 5];
         assert_eq!(v.rotated_left(2), vec![3, 4, 5, 1, 2]);
     }
-    
+
     #[test]
     fn test_rotated_right() {
         let v = vec![1, 2, 3, 4, 5];

@@ -10,11 +10,11 @@ use {
 };
 
 static SRC_DIR: Dir = include_dir!("$CARGO_MANIFEST_DIR/src");
-pub(crate) static TPL_DIR: Dir = include_dir!("$CARGO_MANIFEST_DIR/tpl");
+pub static TPL_DIR: Dir = include_dir!("$CARGO_MANIFEST_DIR/tpl");
 static RUSTFMT_TOML: &str = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/rustfmt.toml"));
 
 /// Create a new contest project.
-#[derive(FromArgs, PartialEq, Debug)]
+#[derive(FromArgs)]
 #[argh(subcommand, name = "new")]
 pub struct NewContestSubCmd {
     #[argh(positional)]
@@ -32,7 +32,7 @@ impl SubCmd for NewContestSubCmd {
         let root_dir = PathBuf::from("./")
             .canonicalize()
             .context("failed to canonicalize root directory path")?
-            .join(format!("{}", self.id));
+            .join(&self.id);
 
         // Ensure that the root directory does not already exist.
         // Create "src" directory for the contest (if it doesn't exist).
@@ -46,7 +46,7 @@ impl SubCmd for NewContestSubCmd {
         self.copy_template(&root_dir)
             .context("failed to copy template files")?;
 
-        println!("New contest created at {:?}", root_dir);
+        println!("New contest created at {root_dir:?}");
         Ok(())
     }
 }
@@ -74,7 +74,7 @@ impl NewContestSubCmd {
                 copy_to(
                     &TPL_DIR,
                     "problem.rs",
-                    &target.join(format!("src/bin/{}.rs", letter)),
+                    &target.join(format!("src/bin/{letter}.rs")),
                 )?;
             }
         }
@@ -83,7 +83,7 @@ impl NewContestSubCmd {
     }
 }
 
-pub(crate) fn copy(dir: &Dir, glob: &str, target: &Path) -> std::io::Result<()> {
+pub fn copy(dir: &Dir, glob: &str, target: &Path) -> std::io::Result<()> {
     for entry in dir.find(glob).unwrap() {
         if let Some(file) = entry.as_file() {
             let rel_path = file.path();
@@ -97,10 +97,10 @@ pub(crate) fn copy(dir: &Dir, glob: &str, target: &Path) -> std::io::Result<()> 
     Ok(())
 }
 
-pub(crate) fn copy_to(dir: &Dir, src: &str, target: &Path) -> std::io::Result<()> {
+pub fn copy_to(dir: &Dir, src: &str, target: &Path) -> std::io::Result<()> {
     let file = dir
         .get_file(src)
-        .expect(format!("file should exist in template directory: {}", src).as_str());
+        .unwrap_or_else(|| panic!("file should exist in template directory: {src}"));
     if let Some(parent) = target.parent() {
         fs::create_dir_all(parent)?;
     }

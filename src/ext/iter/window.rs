@@ -17,7 +17,7 @@ pub trait SlidingWindowExt {
             .sliding_window()
             .try_fold(init, move |acc, (a, b)| f(acc, a, b))
         {
-            ControlFlow::Continue(acc) => acc,
+            ControlFlow::Continue(acc) |
             ControlFlow::Break(acc) => acc,
         }
     }
@@ -59,7 +59,7 @@ impl<'a, T> SlidingWindowExt for &'a [T] {
     }
 }
 
-impl<'a> SlidingWindowExt for std::str::Chars<'a> {
+impl SlidingWindowExt for std::str::Chars<'_> {
     type Item = char;
     type Iter = Self;
 

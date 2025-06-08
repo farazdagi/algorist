@@ -33,9 +33,9 @@ impl CountOccurrences<usize> for [usize] {
     fn group(&self, exclude_zero: bool) -> HashMap<usize, Vec<usize>> {
         self.iter()
             .enumerate()
-            .skip(if exclude_zero { 1 } else { 0 })
+            .skip(usize::from(exclude_zero))
             .fold(HashMap::new(), |mut acc, (val, &count)| {
-                acc.entry(count).or_insert(vec![]).push(val);
+                acc.entry(count).or_default().push(val);
                 acc
             })
     }

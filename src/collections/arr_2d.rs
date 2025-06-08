@@ -5,7 +5,7 @@ use std::io::BufRead;
 
 use crate::io::Scanner;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct Arr2d<T: Debug> {
     data: Vec<T>,
     rows: usize,
@@ -21,6 +21,7 @@ impl<T: Clone + Debug> Arr2d<T> {
         }
     }
 
+    #[must_use]
     pub fn transpose(&self) -> Self {
         Self::with_generator(self.cols, self.rows, |i, j| self[(j, i)].clone())
     }

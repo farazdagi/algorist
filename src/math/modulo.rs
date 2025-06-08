@@ -16,7 +16,7 @@ use std::ops::{
 };
 use std::str::FromStr;
 
-use crate::ext::slice::sum::{max_sum_from_iter, MaxSum};
+use crate::ext::slice::sum::{MaxSum, max_sum_from_iter};
 use crate::math::gcd::gcd_extended;
 use crate::math::{ConstValue, Downcast, Invertible, Number};
 
@@ -30,8 +30,7 @@ impl<T: Number, M: ConstValue<T>> Modulo<T, M> {
     pub fn new_unchecked(val: T) -> Self {
         assert!(
             val >= T::zero() && val < M::val(),
-            "Invalid modulo value: {}",
-            val
+            "Invalid modulo value: {val}"
         );
         Self {
             val,
@@ -66,6 +65,7 @@ where
     T::Source: Number,
     M: ConstValue<T>,
 {
+    #[must_use]
     pub fn pow(self, mut exp: T) -> Self {
         let mut result = Self::new(T::one());
         let mut base = self;
@@ -196,6 +196,7 @@ where
 {
     type Output = Self;
 
+    #[allow(clippy::suspicious_arithmetic_impl)]
     fn div(self, rhs: Self) -> Self {
         self * rhs.inverse().expect("Division by zero")
     }
@@ -207,6 +208,7 @@ where
     T::Source: Number,
     M: ConstValue<T>,
 {
+    #[allow(clippy::suspicious_op_assign_impl)]
     fn div_assign(&mut self, rhs: Self) {
         *self *= rhs.inverse().expect("Division by zero");
     }
@@ -225,7 +227,7 @@ pub type Mod7 = Modulo<i64, Val7>;
 
 #[macro_export]
 macro_rules! ma_impl {
-    ($val: expr) => {
+    ($val:expr) => {
         Mod7::new($val)
     };
 }

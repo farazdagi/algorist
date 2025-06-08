@@ -2,6 +2,7 @@ use std::mem::swap;
 
 use super::{Downcast, Number, One, Zero};
 
+#[allow(clippy::many_single_char_names)]
 pub fn gcd_extended<T>(a: T, b: T) -> (T, T::Source, T::Source)
 where
     T: Number + Downcast,

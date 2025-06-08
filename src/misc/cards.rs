@@ -1,3 +1,4 @@
+use std::fmt;
 use std::io::BufRead;
 
 use crate::io::Scanner;
@@ -22,19 +23,19 @@ pub enum CardRank {
 impl From<char> for CardRank {
     fn from(c: char) -> Self {
         match c {
-            '2' => CardRank::Two,
-            '3' => CardRank::Three,
-            '4' => CardRank::Four,
-            '5' => CardRank::Five,
-            '6' => CardRank::Six,
-            '7' => CardRank::Seven,
-            '8' => CardRank::Eight,
-            '9' => CardRank::Nine,
-            'T' => CardRank::Ten,
-            'J' => CardRank::Jack,
-            'Q' => CardRank::Queen,
-            'K' => CardRank::King,
-            'A' => CardRank::Ace,
+            '2' => Self::Two,
+            '3' => Self::Three,
+            '4' => Self::Four,
+            '5' => Self::Five,
+            '6' => Self::Six,
+            '7' => Self::Seven,
+            '8' => Self::Eight,
+            '9' => Self::Nine,
+            'T' => Self::Ten,
+            'J' => Self::Jack,
+            'Q' => Self::Queen,
+            'K' => Self::King,
+            'A' => Self::Ace,
             _ => unreachable!(),
         }
     }
@@ -62,7 +63,7 @@ impl From<CardRank> for char {
 
 impl std::fmt::Debug for CardRank {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", <CardRank as Into<char>>::into(*self))
+        write!(f, "{}", <Self as Into<char>>::into(*self))
     }
 }
 
@@ -75,31 +76,25 @@ pub enum CardSuit {
 }
 
 impl CardSuit {
-    pub fn all() -> impl Iterator<Item = CardSuit> {
-        [
-            CardSuit::Clubs,
-            CardSuit::Diamonds,
-            CardSuit::Hearts,
-            CardSuit::Spades,
-        ]
-        .into_iter()
+    pub fn all() -> impl Iterator<Item = Self> {
+        [Self::Clubs, Self::Diamonds, Self::Hearts, Self::Spades].into_iter()
     }
 
-    pub fn filter<F>(f: F) -> impl Iterator<Item = CardSuit>
+    pub fn filter<F>(f: F) -> impl Iterator<Item = Self>
     where
-        F: Fn(CardSuit) -> bool,
+        F: Fn(Self) -> bool,
     {
-        CardSuit::all().into_iter().filter(move |&suit| f(suit))
+        Self::all().filter(move |&suit| f(suit))
     }
 }
 
 impl From<char> for CardSuit {
     fn from(c: char) -> Self {
         match c {
-            'C' => CardSuit::Clubs,
-            'D' => CardSuit::Diamonds,
-            'H' => CardSuit::Hearts,
-            'S' => CardSuit::Spades,
+            'C' => Self::Clubs,
+            'D' => Self::Diamonds,
+            'H' => Self::Hearts,
+            'S' => Self::Spades,
             _ => unreachable!(),
         }
     }
@@ -118,13 +113,13 @@ impl From<CardSuit> for char {
 
 impl std::fmt::Debug for CardSuit {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let s = match self {
-            CardSuit::Clubs => "♣",
-            CardSuit::Diamonds => "♢",
-            CardSuit::Hearts => "♡",
-            CardSuit::Spades => "♠",
+        let suit = match self {
+            Self::Clubs => "♣",
+            Self::Diamonds => "♢",
+            Self::Hearts => "♡",
+            Self::Spades => "♠",
         };
-        write!(f, "{}", s)
+        write!(f, "{suit}")
     }
 }
 
@@ -133,7 +128,7 @@ pub struct Card(CardRank, CardSuit);
 
 impl Card {
     pub fn new(rank: CardRank, suit: CardSuit) -> Self {
-        Card(rank, suit)
+        Self(rank, suit)
     }
 
     pub fn rank(&self) -> CardRank {
@@ -142,12 +137,6 @@ impl Card {
 
     pub fn suit(&self) -> CardSuit {
         self.1
-    }
-
-    pub fn to_string(&self) -> String {
-        let rank = <CardRank as Into<char>>::into(self.0);
-        let suit = <CardSuit as Into<char>>::into(self.1);
-        format!("{}{}", rank, suit)
     }
 
     pub fn is_trump(&self, trump: CardSuit) -> bool {
@@ -163,17 +152,25 @@ impl Card {
     }
 }
 
+impl fmt::Display for Card {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let rank = <CardRank as Into<char>>::into(self.0);
+        let suit = <CardSuit as Into<char>>::into(self.1);
+        write!(f, "{rank}{suit}")
+    }
+}
+
 impl From<String> for Card {
     fn from(s: String) -> Self {
         assert!(s.len() == 2);
         let s = s.chars().collect::<Vec<_>>();
-        Card::new(CardRank::from(s[0]), CardSuit::from(s[1]))
+        Self::new(CardRank::from(s[0]), CardSuit::from(s[1]))
     }
 }
 
 impl PartialOrd for Card {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        self.rank().partial_cmp(&other.rank())
+        Some(self.cmp(other))
     }
 }
 
@@ -194,6 +191,12 @@ pub struct CardDeck {
     cards: Vec<Card>,
     trump: Option<CardSuit>,
     by_suit: Vec<Vec<Card>>,
+}
+
+impl Default for CardDeck {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl CardDeck {
@@ -225,7 +228,7 @@ impl CardDeck {
                 by_suit[suit as usize].push(Card::new(rank, suit));
             }
         }
-        CardDeck {
+        Self {
             cards,
             trump: None,
             by_suit,
@@ -240,7 +243,7 @@ impl CardDeck {
             cards.push(card);
             by_suit[card.suit() as usize].push(card);
         }
-        CardDeck {
+        Self {
             cards,
             trump,
             by_suit,
@@ -252,22 +255,23 @@ impl CardDeck {
         for card in &cards {
             by_suit[card.suit() as usize].push(*card);
         }
-        CardDeck {
+        Self {
             cards,
             trump,
             by_suit,
         }
     }
 
+    #[must_use]
     pub fn sorted(self) -> Self {
         let mut cards = self.cards;
         cards.sort();
         let mut by_suit = self.by_suit;
-        for suit in 0..4 {
-            by_suit[suit].sort();
+        for suit in &mut by_suit {
+            suit.sort();
         }
 
-        CardDeck {
+        Self {
             cards,
             trump: self.trump,
             by_suit,

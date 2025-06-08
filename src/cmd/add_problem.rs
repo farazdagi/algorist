@@ -9,7 +9,7 @@ use crate::cmd::new_contest::TPL_DIR;
 use crate::cmd::new_contest::copy_to;
 
 /// Add a problem template to `src/bin/`.
-#[derive(FromArgs, PartialEq, Debug)]
+#[derive(FromArgs)]
 #[argh(subcommand, name = "add")]
 pub struct AddProblemSubCmd {
     #[argh(positional)]
@@ -44,7 +44,7 @@ impl SubCmd for AddProblemSubCmd {
 
         copy_to(&TPL_DIR, "problem.rs", &target_file)?;
 
-        println!("Problem template added at {:?}", target_file);
+        println!("Problem template added at {target_file:?}");
 
         Ok(())
     }

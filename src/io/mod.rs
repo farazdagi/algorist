@@ -48,6 +48,7 @@ impl<R: BufRead> Scanner<R> {
     /// assert_eq!(y, 3.14);
     /// assert_eq!(s, "hello");
     /// ```
+    #[allow(clippy::should_implement_trait)]
     pub fn next<T: std::str::FromStr>(&mut self) -> T {
         loop {
             if let Some(token) = self.iter.next() {
@@ -60,7 +61,9 @@ impl<R: BufRead> Scanner<R> {
 
             self.iter = unsafe {
                 let slice = std::str::from_utf8_unchecked(&self.buffer);
-                std::mem::transmute(slice.split_whitespace())
+                std::mem::transmute::<std::str::SplitWhitespace<'_>, std::str::SplitWhitespace<'_>>(
+                    slice.split_whitespace(),
+                )
             };
         }
     }
@@ -305,8 +308,8 @@ fn wv<W: Write, T: std::fmt::Display>(w: &mut W, v: &[T]) {
     write!(
         w,
         "{}",
-        v.into_iter()
-            .map(|x| x.to_string())
+        v.iter()
+            .map(ToString::to_string)
             .collect::<Vec<_>>()
             .join(" ")
     )

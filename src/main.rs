@@ -8,9 +8,8 @@ use {
 fn main() -> Result<()> {
     // Allow the CLI to be run as `cargo algorist` or `algorist`.
     let cmd: MainCmd = if std::env::args()
-        .skip(1)
-        .next()
-        .map_or(false, |s| s.ends_with("algorist"))
+        .nth(1)
+        .is_some_and(|s| s.ends_with("algorist"))
     {
         argh::cargo_from_env()
     } else {

@@ -1,19 +1,21 @@
 pub trait IntRoot: Sized {
-    fn is_perfect_pow(self, k: usize) -> bool {
+    fn is_perfect_pow(&mut self, k: usize) -> bool {
         self.root(k).is_some()
     }
 
-    fn root(self, k: usize) -> Option<Self>;
+    fn root(&mut self, k: usize) -> Option<Self>;
 
+    #[must_use]
     fn root_floor(self, k: usize) -> Self;
 
+    #[must_use]
     fn root_ceil(self, k: usize) -> Self;
 }
 
 impl IntRoot for i64 {
-    fn root(self, k: usize) -> Option<Self> {
+    fn root(&mut self, k: usize) -> Option<Self> {
         let x = self.root_floor(k);
-        if x.pow(k as u32) == self {
+        if x.pow(k as u32) == *self {
             Some(x)
         } else {
             None
@@ -22,7 +24,7 @@ impl IntRoot for i64 {
 
     fn root_floor(self, k: usize) -> Self {
         assert!(self >= 0);
-        let mut x = (self as f64).powf(1.0 / k as f64).round() as i64;
+        let mut x = (self as f64).powf(1.0 / k as f64).round() as Self;
         while x.pow(k as u32) > self {
             x -= 1;
         }
@@ -32,11 +34,7 @@ impl IntRoot for i64 {
     fn root_ceil(self, k: usize) -> Self {
         assert!(self >= 0);
         let x = self.root_floor(k);
-        if x.pow(k as u32) == self {
-            x
-        } else {
-            x + 1
-        }
+        if x.pow(k as u32) == self { x } else { x + 1 }
     }
 }
 

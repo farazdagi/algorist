@@ -1,20 +1,22 @@
 pub trait IntLog: Sized {
     /// Returns the integer part of the logarithm of `self` in base `base`.
+    #[must_use]
     fn log(self, base: Self) -> Self;
 
     /// How many times can the number be divided by `base` (integer division,
     /// fraction is dropped) before it becomes 0.
+    #[must_use]
     fn div_till_zero(self, base: Self) -> Self;
 }
 
 impl IntLog for i64 {
-    fn log(self, base: i64) -> i64 {
+    fn log(self, base: Self) -> Self {
         assert!(self > 0, "self must be a positive number");
         assert!(base > 1, "base must be greater than 1");
-        (self as f64).log(base as f64).ceil() as i64
+        (self as f64).log(base as f64).ceil() as Self
     }
 
-    fn div_till_zero(self, base: i64) -> i64 {
+    fn div_till_zero(self, base: Self) -> Self {
         assert!(self >= 0, "self must be non-negative number");
         assert!(base > 1, "base must be greater than 1");
         let mut x = self;

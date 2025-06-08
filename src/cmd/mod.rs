@@ -15,14 +15,14 @@ pub trait SubCmd {
 }
 
 /// The algorist CLI tool.
-#[derive(FromArgs, PartialEq, Debug)]
+#[derive(FromArgs)]
 #[argh(help_triggers("-h", "--help", "help"))]
 pub struct MainCmd {
     #[argh(subcommand)]
     nested: TopLevelCmdEnum,
 }
 
-#[derive(FromArgs, PartialEq, Debug)]
+#[derive(FromArgs)]
 #[argh(subcommand)]
 enum TopLevelCmdEnum {
     New(NewContestSubCmd),

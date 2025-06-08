@@ -1,4 +1,5 @@
 pub trait Reversed {
+    #[must_use]
     fn reversed(self) -> Self;
 }
 

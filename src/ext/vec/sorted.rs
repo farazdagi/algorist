@@ -1,11 +1,14 @@
 pub trait Sorted<T> {
+    #[must_use]
     fn sorted(self) -> Self;
 
+    #[must_use]
     fn sorted_by_key<K, F>(self, f: F) -> Self
     where
         K: Ord,
         F: FnMut(&T) -> K;
 
+    #[must_use]
     fn sorted_dedup(self) -> Self;
 }
 

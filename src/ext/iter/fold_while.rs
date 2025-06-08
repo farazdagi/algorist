@@ -7,7 +7,7 @@ pub enum FoldWhile<T> {
 impl<T> FoldWhile<T> {
     pub fn into_inner(self) -> T {
         match self {
-            FoldWhile::Continue(t) | FoldWhile::Break(t) => t,
+            Self::Continue(t) | Self::Break(t) => t,
         }
     }
 }
@@ -27,7 +27,7 @@ impl<I: Iterator> FoldWhileExt for I {
     where
         F: FnMut(B, Self::Item) -> FoldWhile<B>,
     {
-        while let Some(x) = self.next() {
+        for x in self.by_ref() {
             match f(init, x) {
                 FoldWhile::Continue(new_init) => init = new_init,
                 FoldWhile::Break(new_init) => return FoldWhile::Break(new_init),

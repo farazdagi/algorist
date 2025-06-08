@@ -21,7 +21,7 @@ pub fn sieve<T: Number + AsPrimitive<usize>>(n: T) -> Vec<bool> {
     let mut nums = vec![true; n + 1];
     nums[0] = false;
     nums[1] = false;
-    for i in 2..1 + (n as f64).sqrt() as usize {
+    for i in 2..=((n as f64).sqrt() as usize) {
         if nums[i] {
             for j in (i * i..=n).step_by(i) {
                 nums[j] = false;
@@ -75,12 +75,12 @@ pub fn count_factors<T: Number + AsPrimitive<usize>>(n: T) -> Vec<usize> {
 }
 
 /// Represents a prime factor and its count.
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct PrimeFactor(usize, usize);
 
-impl Into<(usize, usize)> for PrimeFactor {
-    fn into(self) -> (usize, usize) {
-        (self.0, self.1)
+impl From<PrimeFactor> for (usize, usize) {
+    fn from(factor: PrimeFactor) -> Self {
+        (factor.0, factor.1)
     }
 }
 
@@ -88,14 +88,14 @@ impl Into<(usize, usize)> for PrimeFactor {
 #[derive(Debug)]
 pub struct PrimeFactors {
     value: usize,
-    factors: std::ops::Range<usize>,
+    factors: std::ops::RangeInclusive<usize>,
 }
 
 impl PrimeFactors {
     pub fn new(n: usize) -> Self {
         Self {
             value: n,
-            factors: 2..1 + (n as f64).sqrt() as usize,
+            factors: 2..=((n as f64).sqrt() as usize),
         }
     }
 }
@@ -108,7 +108,7 @@ impl Iterator for PrimeFactors {
             return None;
         }
 
-        while let Some(factor) = self.factors.next() {
+        for factor in self.factors.by_ref() {
             if self.value % factor == 0 {
                 let mut count = 0;
                 while self.value % factor == 0 {
@@ -148,7 +148,7 @@ pub fn all_divisors(n: usize) -> Vec<usize> {
 /// order.
 pub fn all_divisors_sorted(n: usize) -> Vec<usize> {
     let mut divisors = generate_divisors(factorize(n));
-    divisors.sort();
+    divisors.sort_unstable();
     divisors
 }
 

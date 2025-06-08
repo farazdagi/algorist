@@ -11,7 +11,7 @@ where
     I: Iterator,
 {
     pub fn new(iter: I, chunk_size: usize) -> Self {
-        Chunks { iter, chunk_size }
+        Self{ iter, chunk_size }
     }
 }
 
@@ -30,11 +30,7 @@ where
                 break;
             }
         }
-        if chunk.is_empty() {
-            None
-        } else {
-            Some(chunk)
-        }
+        if chunk.is_empty() { None } else { Some(chunk) }
     }
 }
 

@@ -26,7 +26,7 @@ impl<T, V: ConstValue<T>> Value<T> for V {
 
 #[macro_export]
 macro_rules! value_impl {
-    ($name: ident: $t: ty = $val: expr) => {
+    ($name:ident : $t:ty = $val:expr) => {
         #[derive(Copy, Clone, Eq, PartialEq, Hash, Ord, PartialOrd, Default)]
         pub struct $name {}
 
@@ -102,7 +102,7 @@ macro_rules! upcast_impl {
         impl $crate::math::Upcast for $t {
             type Target = $w;
             fn upcast(self) -> Self::Target {
-                self as $w
+                $w::from(self)
             }
         }
     )+};

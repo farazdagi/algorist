@@ -1,4 +1,4 @@
-//! Module for I/O operations.
+//! # I/O operations
 //!
 //! This module features utilities for reading input using the [`Scanner`], and
 //! writing output using the [`wln!`] macro.

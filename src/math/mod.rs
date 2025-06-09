@@ -1,3 +1,12 @@
+//! # Mathematical utilities.
+//!
+//! Various mathematical utilities, including number theory, modular arithmetic,
+//! and more.
+//!
+//! # Number theory
+//!
+//! For working with prime numbers, see the functions in [`primes`] module.
+
 pub mod gcd;
 pub mod log;
 pub mod modulo;
@@ -10,10 +19,12 @@ use std::fmt::Debug;
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Rem, RemAssign, Sub, SubAssign};
 use std::str::FromStr;
 
+/// Wrapper for a value of type `T`.
 pub trait Value<T>: Copy + Clone + Eq + Ord + Default {
     fn val() -> T;
 }
 
+/// Type has a constant value of type `T`.
 pub trait ConstValue<T>: Value<T> {
     const VAL: T;
 }
@@ -37,10 +48,12 @@ macro_rules! value_impl {
 }
 pub use value_impl as value;
 
+/// Type has a zero value.
 pub trait Zero {
     fn zero() -> Self;
 }
 
+/// Type has a unit value.
 pub trait One {
     fn one() -> Self;
 }
@@ -71,6 +84,10 @@ macro_rules! one_impl {
 
 one_impl!(i8 i16 i32 i64 i128 isize u8 u16 u32 u64 u128 usize);
 
+/// Trait for down-casting numeric types.
+///
+/// Potential loss of precision may occur when down-casting from a wider type to
+/// a narrower type.
 pub trait Downcast: Sized {
     type Source: From<Self>;
 
@@ -90,6 +107,7 @@ macro_rules! downcast_impl {
 }
 downcast_impl!(i8 i16, i16 i32, i32 i64, i64 i128, u8 u16, u16 u32, u32 u64, u64 u128);
 
+/// Trait for up-casting numeric types.
 pub trait Upcast: Sized {
     type Target: From<Self>;
 
@@ -110,6 +128,7 @@ macro_rules! upcast_impl {
 
 upcast_impl!(i8 i16, i16 i32, i32 i64, i64 i128, u8 u16, u16 u32, u32 u64, u64 u128);
 
+/// Numeric type.
 pub trait Number:
     Sized
     + Copy
@@ -161,12 +180,14 @@ impl<T> Number for T where
 {
 }
 
+/// Trait for types that can be inverted, returning an `Output` type.
 pub trait Invertible {
     type Output;
 
     fn inverse(&self) -> Option<Self::Output>;
 }
 
+/// Trait for types that can be converted to a primitive underlying type.
 pub trait AsPrimitive<T> {
     fn as_primitive(&self) -> T;
 }

@@ -55,6 +55,56 @@
 //!
 //! ## Factorization
 //!
+//! To factorize a number into its prime factors, use the [`factorize`]
+//! function.
+//!
+//! Alternatively, rely on [`PrimeFactorsIter`] iterator, either directly of via [`PrimeFactors`]
+//! trait.
+//!
+//! The former returns an owned vector of [`PrimeFactor`] structs, and the
+//! latter provides an *iterator* over them.
+//!
+//! ```
+//! use algorist::math::primes::{PrimeFactor, PrimeFactors, PrimeFactorsIter, factorize};
+//!
+//! // Factorize a number into its prime factors.
+//! let factors = factorize(30);
+//! assert_eq!(factors, vec![
+//!     PrimeFactor(2, 1),
+//!     PrimeFactor(3, 1),
+//!     PrimeFactor(5, 1),
+//! ]);
+//!
+//! // Alternatively, use the iterator to get the same result:
+//! let factors: Vec<PrimeFactor> = PrimeFactorsIter::new(30).collect();
+//! assert_eq!(factors, vec![
+//!     PrimeFactor(2, 1),
+//!     PrimeFactor(3, 1),
+//!     PrimeFactor(5, 1),
+//! ]);
+//!
+//! // You can also use the `PrimeFactors` trait for convenience:
+//! let factors = 30.prime_factors();
+//! assert_eq!(factors, vec![
+//!     PrimeFactor(2, 1),
+//!     PrimeFactor(3, 1),
+//!     PrimeFactor(5, 1),
+//! ]);
+//! let factors: Vec<_> = 30.prime_factors_iter().collect();
+//! assert_eq!(factors, vec![
+//!     PrimeFactor(2, 1),
+//!     PrimeFactor(3, 1),
+//!     PrimeFactor(5, 1),
+//! ]);
+//!
+//! // For larger numbers (and different numeric types):
+//! let factors = vec![PrimeFactor(1_000_000_007, 1)];
+//! assert_eq!(factors, 1_000_000_007.prime_factors());
+//! assert_eq!(factors, 1_000_000_007_i32.prime_factors());
+//! assert_eq!(factors, 1_000_000_007_usize.prime_factors());
+//! assert_eq!(factors, 1_000_000_007_u64.prime_factors());
+//! ```
+//!
 //! ## Additional functions
 //!
 //! If you need to find the largest prime factor of each number up to `n`, use
@@ -120,6 +170,15 @@ pub fn is_prime<T: Number>(n: T) -> bool {
 
 /// Iterator over prime numbers up to a given limit using the Sieve of
 /// Eratosthenes.
+///
+/// # Example
+///
+/// ```
+/// use algorist::math::primes::SieveIter;
+///
+/// let primes: Vec<_> = SieveIter::new(30).collect();
+/// assert_eq!(primes, vec![2, 3, 5, 7, 11, 13, 17, 19, 23, 29]);
+/// ```
 pub struct SieveIter {
     n: usize,
     nsqrt: usize,
@@ -211,7 +270,7 @@ pub fn sieve<T: Number + AsPrimitive<usize>>(n: T) -> Vec<bool> {
     nums
 }
 
-/// Various lists based on list of prime numbers up to `n`.
+/// Prime numbers up to `n`.
 pub trait Primes: Sized {
     /// Returns an iterator over the prime numbers up to `n`.
     ///
@@ -332,8 +391,26 @@ pub fn count_factors<T: Number + AsPrimitive<usize>>(n: T) -> Vec<usize> {
 }
 
 /// Represents a prime factor and its count.
+///
+/// # Example
+///
+/// ```
+/// use algorist::math::primes::PrimeFactor;
+///
+/// let factor = PrimeFactor::new(2, 3);
+/// assert_eq!(factor.factor(), 2);
+/// assert_eq!(factor.count(), 3);
+///
+/// let factor = PrimeFactor(3, 1);
+/// assert_eq!(factor.factor(), 3);
+/// assert_eq!(factor.count(), 1);
+///
+/// // Convert to tuple
+/// let tuple: (usize, usize) = factor.into();
+/// assert_eq!(tuple, (3, 1));
+/// ```
 #[derive(Debug, PartialEq, Eq)]
-pub struct PrimeFactor(usize, usize);
+pub struct PrimeFactor(pub usize, pub usize);
 
 impl From<PrimeFactor> for (usize, usize) {
     fn from(factor: PrimeFactor) -> Self {
@@ -359,13 +436,25 @@ impl PrimeFactor {
 }
 
 /// An iterator over the prime factors of a number.
+///
+/// # Example
+/// ```
+/// use algorist::math::primes::{PrimeFactor, PrimeFactorsIter};
+///
+/// let factors: Vec<PrimeFactor> = PrimeFactorsIter::new(30).collect();
+/// assert_eq!(factors, vec![
+///     PrimeFactor(2, 1),
+///     PrimeFactor(3, 1),
+///     PrimeFactor(5, 1),
+/// ]);
+/// ```
 #[derive(Debug)]
-pub struct PrimeFactors {
+pub struct PrimeFactorsIter {
     value: usize,
     factors: std::ops::RangeInclusive<usize>,
 }
 
-impl PrimeFactors {
+impl PrimeFactorsIter {
     pub fn new(n: usize) -> Self {
         Self {
             value: n,
@@ -374,7 +463,7 @@ impl PrimeFactors {
     }
 }
 
-impl Iterator for PrimeFactors {
+impl Iterator for PrimeFactorsIter {
     type Item = PrimeFactor;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -403,14 +492,110 @@ impl Iterator for PrimeFactors {
     }
 }
 
-/// Returns the prime factorization of the given number.
-pub fn factorize(n: usize) -> Vec<PrimeFactor> {
-    PrimeFactors::new(n).collect()
+/// Prime factors of a number.
+///
+/// # Example
+/// ```
+/// use algorist::math::primes::{PrimeFactor, PrimeFactors};
+///
+/// let factors: Vec<_> = 30.prime_factors_iter().collect();
+/// assert_eq!(factors, vec![
+///     PrimeFactor(2, 1),
+///     PrimeFactor(3, 1),
+///     PrimeFactor(5, 1),
+/// ]);
+///
+/// let factors = 30.prime_factors();
+/// assert_eq!(factors, vec![
+///     PrimeFactor(2, 1),
+///     PrimeFactor(3, 1),
+///     PrimeFactor(5, 1),
+/// ]);
+///
+/// // For larger numbers:
+/// let factors = 1_000_000_000.prime_factors();
+/// assert_eq!(factors, vec![PrimeFactor(2, 9), PrimeFactor(5, 9)]);
+/// let factors = 1_000_000_007.prime_factors();
+/// assert_eq!(factors, vec![PrimeFactor(1_000_000_007, 1)]);
+/// ```
+pub trait PrimeFactors: Sized {
+    /// Returns an iterator over the prime factors of the number.
+    ///
+    /// # Example
+    /// ```
+    /// use algorist::math::primes::{PrimeFactor, PrimeFactors};
+    ///
+    /// let factors: Vec<PrimeFactor> = 30.prime_factors_iter().collect();
+    /// assert_eq!(factors, vec![
+    ///     PrimeFactor(2, 1),
+    ///     PrimeFactor(3, 1),
+    ///     PrimeFactor(5, 1)
+    /// ]);
+    /// ```
+    fn prime_factors_iter(self) -> PrimeFactorsIter;
+
+    /// Returns the prime factorization of the number.
+    ///
+    /// # Example
+    /// ```
+    /// use algorist::math::primes::{PrimeFactor, PrimeFactors};
+    ///
+    /// let factors = 30.prime_factors();
+    /// assert_eq!(factors, vec![
+    ///     PrimeFactor(2, 1),
+    ///     PrimeFactor(3, 1),
+    ///     PrimeFactor(5, 1)
+    /// ]);
+    /// ```
+    fn prime_factors(self) -> Vec<PrimeFactor> {
+        self.prime_factors_iter().collect()
+    }
 }
 
-/// Returns an iterator over the prime factorization of the given number.
-pub fn factorize_iter(n: usize) -> PrimeFactors {
-    PrimeFactors::new(n)
+impl<T: Number + AsPrimitive<usize>> PrimeFactors for T {
+    fn prime_factors_iter(self) -> PrimeFactorsIter {
+        PrimeFactorsIter::new(self.as_primitive())
+    }
+}
+
+/// Returns the prime factorization of the given number.
+///
+/// # Example
+/// ```
+/// use algorist::math::primes::{PrimeFactor, factorize};
+///
+/// // 30 = 2^1 * 3^1 * 5^1
+/// let factors = factorize(30);
+/// assert_eq!(factors, vec![
+///     PrimeFactor(2, 1),
+///     PrimeFactor(3, 1),
+///     PrimeFactor(5, 1),
+/// ]);
+///
+/// // 60 = 2^2 * 3^1 * 5^1
+/// let factors = factorize(60);
+/// assert_eq!(factors, vec![
+///     PrimeFactor(2, 2),
+///     PrimeFactor(3, 1),
+///     PrimeFactor(5, 1),
+/// ]);
+///
+/// // 90 = 2^1 * 3^2 * 5^1
+/// let factors = factorize(90);
+/// assert_eq!(factors, vec![
+///     PrimeFactor(2, 1),
+///     PrimeFactor(3, 2),
+///     PrimeFactor(5, 1),
+/// ]);
+///
+/// /// For larger numbers:
+/// let factors = factorize(1_000_000_000);
+/// assert_eq!(factors, vec![PrimeFactor(2, 9), PrimeFactor(5, 9)]);
+/// let factors = factorize(1_000_000_007);
+/// assert_eq!(factors, vec![PrimeFactor(1_000_000_007, 1)]);
+/// ```
+pub fn factorize(n: usize) -> Vec<PrimeFactor> {
+    PrimeFactorsIter::new(n).collect()
 }
 
 /// Returns all (not necessarily prime) divisors of the given number.
@@ -519,20 +704,20 @@ mod tests {
     }
 
     #[test]
-    fn test_factorize_iter() {
-        let mut factors = factorize_iter(30);
+    fn test_prime_factors_iter() {
+        let mut factors = PrimeFactorsIter::new(30);
         assert_eq!(factors.next(), Some(PrimeFactor(2, 1)));
         assert_eq!(factors.next(), Some(PrimeFactor(3, 1)));
         assert_eq!(factors.next(), Some(PrimeFactor(5, 1)));
         assert_eq!(factors.next(), None);
 
-        let mut factors = factorize_iter(60);
+        let mut factors = PrimeFactorsIter::new(60);
         assert_eq!(factors.next(), Some(PrimeFactor(2, 2)));
         assert_eq!(factors.next(), Some(PrimeFactor(3, 1)));
         assert_eq!(factors.next(), Some(PrimeFactor(5, 1)));
         assert_eq!(factors.next(), None);
 
-        let mut factors = factorize_iter(90);
+        let mut factors = PrimeFactorsIter::new(90);
         assert_eq!(factors.next(), Some(PrimeFactor(2, 1)));
         assert_eq!(factors.next(), Some(PrimeFactor(3, 2)));
         assert_eq!(factors.next(), Some(PrimeFactor(5, 1)));

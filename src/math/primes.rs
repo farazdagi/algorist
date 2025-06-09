@@ -58,8 +58,8 @@
 //! To factorize a number into its prime factors, use the [`factorize`]
 //! function.
 //!
-//! Alternatively, rely on [`PrimeFactorsIter`] iterator, either directly of via [`PrimeFactors`]
-//! trait.
+//! Alternatively, rely on [`PrimeFactorsIter`] iterator, either directly of via
+//! [`PrimeFactors`] trait.
 //!
 //! The former returns an owned vector of [`PrimeFactor`] structs, and the
 //! latter provides an *iterator* over them.
@@ -104,14 +104,6 @@
 //! assert_eq!(factors, 1_000_000_007_usize.prime_factors());
 //! assert_eq!(factors, 1_000_000_007_u64.prime_factors());
 //! ```
-//!
-//! ## Additional functions
-//!
-//! If you need to find the largest prime factor of each number up to `n`, use
-//! [`max_factors`].
-//!
-//! For counting distinct prime factors or each number up to `n`, use
-//! [`count_factors`].
 
 use crate::math::{AsPrimitive, Number};
 
@@ -337,59 +329,6 @@ pub fn non_primes<T: Number + AsPrimitive<usize>>(n: T) -> Vec<usize> {
     (1..=n.as_primitive()).filter(|&x| !primes[x]).collect()
 }
 
-/// Computes the largest prime factor of each number up to `n`.
-///
-/// # Example
-/// ```
-/// use algorist::math::primes::max_factors;
-///
-/// let factors = max_factors(15);
-/// assert_eq!(factors, vec![
-///     0, 0, 2, 3, 2, 5, 3, 7, 2, 3, 5, 11, 3, 13, 7, 5
-/// ]);
-/// assert_eq!(factors[2], 2); // meaning 2's largest prime factor is 2
-/// assert_eq!(factors[15], 5); // meaning 15's largest prime factor is 5
-/// ```
-pub fn max_factors<T: Number + AsPrimitive<usize>>(n: T) -> Vec<usize> {
-    let n = n.as_primitive();
-    let mut nums = vec![0; n + 1];
-    for i in 2..=n {
-        if nums[i] == 0 {
-            for j in (i..=n).step_by(i) {
-                nums[j] = i;
-            }
-        }
-    }
-    nums
-}
-
-/// Computes number of distinct prime divisors of each number up to `n`.
-///
-/// # Example
-///
-/// ```
-/// use algorist::math::primes::count_factors;
-///
-/// let factors = count_factors(15);
-/// assert_eq!(factors, vec![
-///     0, 0, 1, 1, 1, 1, 2, 1, 1, 1, 2, 1, 2, 1, 2, 2
-/// ]);
-/// assert_eq!(factors[2], 1); // meaning 2 has 1 distinct prime factor
-/// assert_eq!(factors[15], 2); // meaning 15 has 2 distinct prime factors (3 and 5)
-/// ```
-pub fn count_factors<T: Number + AsPrimitive<usize>>(n: T) -> Vec<usize> {
-    let n = n.as_primitive();
-    let mut nums = vec![0; n + 1];
-    for i in 2..=n {
-        if nums[i] == 0 {
-            for j in (i..=n).step_by(i) {
-                nums[j] += 1;
-            }
-        }
-    }
-    nums
-}
-
 /// Represents a prime factor and its count.
 ///
 /// # Example
@@ -409,7 +348,7 @@ pub fn count_factors<T: Number + AsPrimitive<usize>>(n: T) -> Vec<usize> {
 /// let tuple: (usize, usize) = factor.into();
 /// assert_eq!(tuple, (3, 1));
 /// ```
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct PrimeFactor(pub usize, pub usize);
 
 impl From<PrimeFactor> for (usize, usize) {
@@ -518,7 +457,7 @@ impl Iterator for PrimeFactorsIter {
 /// let factors = 1_000_000_007.prime_factors();
 /// assert_eq!(factors, vec![PrimeFactor(1_000_000_007, 1)]);
 /// ```
-pub trait PrimeFactors: Sized {
+pub trait PrimeFactors: Number + AsPrimitive<usize> {
     /// Returns an iterator over the prime factors of the number.
     ///
     /// # Example
@@ -549,6 +488,65 @@ pub trait PrimeFactors: Sized {
     /// ```
     fn prime_factors(self) -> Vec<PrimeFactor> {
         self.prime_factors_iter().collect()
+    }
+
+    /// Computes the largest prime factor of each number up to `n`.
+    ///
+    /// Currently, it supports numbers up to 10,000.
+    ///
+    /// # Example
+    /// ```
+    /// use algorist::math::primes::PrimeFactors;
+    ///
+    /// let factors = 15.max_prime_factors();
+    /// assert_eq!(factors, vec![
+    ///     0, 0, 2, 3, 2, 5, 3, 7, 2, 3, 5, 11, 3, 13, 7, 5
+    /// ]);
+    /// assert_eq!(factors[2], 2); // meaning 2's largest prime factor is 2
+    /// assert_eq!(factors[15], 5); // meaning 15's largest prime factor is 5
+    /// ```
+    fn max_prime_factors(self) -> Vec<usize> {
+        let n = self.as_primitive();
+        assert!(
+            n <= 10_000,
+            "n must be less than 10,000 to avoid excessive time complexity"
+        );
+        let mut nums = vec![0; n + 1];
+        for i in 2..=n {
+            if nums[i] == 0 {
+                for j in (i..=n).step_by(i) {
+                    nums[j] = i;
+                }
+            }
+        }
+        nums
+    }
+
+    /// Computes number of distinct prime divisors of each number up to `n`.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use algorist::math::primes::PrimeFactors;
+    ///
+    /// let factors = 15.count_prime_factors();
+    /// assert_eq!(factors, vec![
+    ///     0, 0, 1, 1, 1, 1, 2, 1, 1, 1, 2, 1, 2, 1, 2, 2
+    /// ]);
+    /// assert_eq!(factors[2], 1); // meaning 2 has 1 distinct prime factor
+    /// assert_eq!(factors[15], 2); // meaning 15 has 2 distinct prime factors (3 and 5)
+    /// ```
+    fn count_prime_factors(self) -> Vec<usize> {
+        let n = self.as_primitive();
+        let mut nums = vec![0; n + 1];
+        for i in 2..=n {
+            if nums[i] == 0 {
+                for j in (i..=n).step_by(i) {
+                    nums[j] += 1;
+                }
+            }
+        }
+        nums
     }
 }
 
@@ -612,7 +610,7 @@ pub fn all_divisors_sorted(n: usize) -> Vec<usize> {
 }
 
 /// Generates all divisors from the prime factors.
-pub fn generate_divisors(factors: Vec<PrimeFactor>) -> Vec<usize> {
+fn generate_divisors(factors: Vec<PrimeFactor>) -> Vec<usize> {
     let factor_powers: Vec<Vec<_>> = factors
         .into_iter()
         .map(Into::into)
@@ -670,7 +668,7 @@ mod tests {
 
     #[test]
     fn test_max_factors() {
-        assert_eq!(max_factors(30), [
+        assert_eq!(30.max_prime_factors(), [
             0, 0, 2, 3, 2, 5, 3, 7, 2, 3, 5, 11, 3, 13, 7, 5, 2, 17, 3, 19, 5, 7, 11, 23, 3, 5, 13,
             3, 7, 29, 5
         ]);
@@ -678,7 +676,7 @@ mod tests {
 
     #[test]
     fn test_count_factors() {
-        assert_eq!(count_factors(30), [
+        assert_eq!(30.count_prime_factors(), [
             0, 0, 1, 1, 1, 1, 2, 1, 1, 1, 2, 1, 2, 1, 2, 2, 1, 1, 2, 1, 2, 2, 2, 1, 2, 1, 2, 1, 2,
             1, 3
         ]);

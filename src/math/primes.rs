@@ -55,6 +55,8 @@
 //!
 //! ## Factorization
 //!
+//! ### Prime factorization
+//!
 //! To factorize a number into its prime factors, use the [`factorize`]
 //! function.
 //!
@@ -103,6 +105,19 @@
 //! assert_eq!(factors, 1_000_000_007_i32.prime_factors());
 //! assert_eq!(factors, 1_000_000_007_usize.prime_factors());
 //! assert_eq!(factors, 1_000_000_007_u64.prime_factors());
+//! ```
+//!
+//! ### Factors (not necessarily prime or proper)
+//!
+//! To get all factors of a number (not necessarily prime or proper), use the
+//! [`factors`] function or the [`Factors`] trait.
+//!
+//! ```
+//! use algorist::ext::vec::sorted::Sorted;
+//! use algorist::math::primes::{Factors, factors};
+//!
+//! assert_eq!(factors(30).sorted(), vec![1, 2, 3, 5, 6, 10, 15, 30]);
+//! assert_eq!(30.factors().sorted(), vec![1, 2, 3, 5, 6, 10, 15, 30]);
 //! ```
 
 use crate::math::{AsPrimitive, Number};
@@ -596,17 +611,55 @@ pub fn factorize(n: usize) -> Vec<PrimeFactor> {
     PrimeFactorsIter::new(n).collect()
 }
 
-/// Returns all (not necessarily prime) divisors of the given number.
-pub fn all_divisors(n: usize) -> Vec<usize> {
-    generate_divisors(factorize(n))
+/// Factors (not necessarily prime or proper) of a number.
+///
+/// # Example
+///
+/// ```
+/// use algorist::ext::vec::sorted::Sorted;
+/// use algorist::math::primes::Factors;
+///
+/// assert_eq!(30.factors().sorted(), vec![1, 2, 3, 5, 6, 10, 15, 30]);
+/// assert_eq!(60.factors().sorted(), vec![
+///     1, 2, 3, 4, 5, 6, 10, 12, 15, 20, 30, 60
+/// ]);
+///
+/// // For larger numbers:
+/// let divs = 1_000_000_000.factors();
+/// assert_eq!(divs.len(), 100);
+/// ```
+pub trait Factors: Number + AsPrimitive<usize> {
+    /// Factors (not necessarily prime or proper) of a number.
+    fn factors(self) -> Vec<usize> {
+        factors(self.as_primitive())
+    }
 }
 
-/// Returns all (not necessarily prime) divisors of the given number in sorted
-/// order.
-pub fn all_divisors_sorted(n: usize) -> Vec<usize> {
-    let mut divisors = generate_divisors(factorize(n));
-    divisors.sort_unstable();
-    divisors
+impl<T: Number + AsPrimitive<usize>> Factors for T {}
+
+/// Factors (not necessarily prime or proper) of a number.
+///
+/// # Example
+/// ```
+/// use algorist::ext::vec::sorted::Sorted;
+/// use algorist::math::primes::factors;
+///
+/// assert_eq!(factors(1), vec![1]);
+/// assert_eq!(
+///     factors(30).sorted(),
+///     vec![1, 2, 3, 5, 6, 10, 15, 30].sorted()
+/// );
+/// assert_eq!(
+///     factors(60).sorted(),
+///     vec![1, 2, 3, 4, 5, 6, 10, 12, 15, 20, 30, 60].sorted()
+/// );
+///
+/// // For larger numbers:
+/// let divs = factors(1_000_000_000);
+/// assert_eq!(divs.len(), 100);
+/// ```
+pub fn factors(n: usize) -> Vec<usize> {
+    generate_divisors(factorize(n))
 }
 
 /// Generates all divisors from the prime factors.
@@ -724,15 +777,15 @@ mod tests {
 
     #[test]
     fn test_all_divisors() {
-        assert_eq!(all_divisors(30).sorted(), vec![1, 2, 3, 5, 6, 10, 15, 30]);
-        assert_eq!(all_divisors(60).sorted(), vec![
+        assert_eq!(30.factors().sorted(), vec![1, 2, 3, 5, 6, 10, 15, 30]);
+        assert_eq!(60.factors().sorted(), vec![
             1, 2, 3, 4, 5, 6, 10, 12, 15, 20, 30, 60
         ]);
-        assert_eq!(all_divisors(90).sorted(), vec![
+        assert_eq!(90.factors().sorted(), vec![
             1, 2, 3, 5, 6, 9, 10, 15, 18, 30, 45, 90
         ]);
 
-        assert_eq!(all_divisors(1), vec![1]);
+        assert_eq!(1.factors(), vec![1]);
     }
 
     #[test]
@@ -742,7 +795,7 @@ mod tests {
         let factors = factorize(1_000_000_000);
         assert_eq!(factors, vec![PrimeFactor(2, 9), PrimeFactor(5, 9),]);
 
-        let divs = all_divisors_sorted(1_000_000_000);
+        let divs = 1_000_000_000.factors();
         assert_eq!(divs.len(), 100);
     }
 }

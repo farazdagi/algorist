@@ -63,8 +63,8 @@ impl NewContestSubCmd {
             println!("Adding problems a-h to the contest...");
             for letter in 'a'..='h' {
                 copy_to(
-                    &SRC_DIR,
-                    "bin/problem.rs",
+                    &TPL_DIR,
+                    "problem.rs",
                     &target.join(format!("src/bin/{letter}.rs")),
                 )?;
             }

@@ -1,5 +1,5 @@
 use {
-    crate::cmd::{SRC_DIR, SubCmd, copy_to},
+    crate::cmd::{SubCmd, TPL_DIR, copy_to},
     anyhow::{Context, Result, anyhow},
     argh::FromArgs,
     std::{fs, path::PathBuf},
@@ -39,7 +39,7 @@ impl SubCmd for AddProblemSubCmd {
             return Err(anyhow!("Problem file already exists: {:?}", target_file));
         }
 
-        copy_to(&SRC_DIR, "bin/problem.rs", &target_file)?;
+        copy_to(&TPL_DIR, "problem.rs", &target_file)?;
 
         println!("Problem template added at {target_file:?}");
 

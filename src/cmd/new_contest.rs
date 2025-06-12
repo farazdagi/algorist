@@ -1,5 +1,5 @@
 use {
-    crate::cmd::{GITIGNORE, RUSTFMT_TOML, SRC_DIR, SubCmd, copy, copy_to},
+    crate::cmd::{GITIGNORE, RUSTFMT_TOML, SRC_DIR, SubCmd, TPL_DIR, copy, copy_to},
     anyhow::{Context, Result, anyhow},
     argh::FromArgs,
     std::{
@@ -51,12 +51,8 @@ impl NewContestSubCmd {
         // Copy the necessary library files for contest project.
         println!("Copying template files to the contest directory...");
         copy(&SRC_DIR, "algorist/**/*", &target.join("src"))?;
-        copy_to(&SRC_DIR, "algorist/tpl/lib.rs", &target.join("src/lib.rs"))?;
-        copy_to(
-            &SRC_DIR,
-            "algorist/tpl/Cargo.toml",
-            &target.join("Cargo.toml"),
-        )?;
+        copy_to(&TPL_DIR, "lib.rs", &target.join("src/lib.rs"))?;
+        copy_to(&TPL_DIR, "Cargo.toml", &target.join("Cargo.toml"))?;
 
         // Copy files from root directory.
         fs::write(target.join(".gitignore"), GITIGNORE)?;

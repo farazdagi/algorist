@@ -44,24 +44,17 @@ impl MainCmd {
 }
 
 pub static SRC_DIR: Dir = include_dir!("$CARGO_MANIFEST_DIR/src");
+pub static TPL_DIR: Dir = include_dir!("$CARGO_MANIFEST_DIR/tpl");
 pub static RUSTFMT_TOML: &str = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/rustfmt.toml"));
 pub static GITIGNORE: &str = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/.gitignore"));
-static IGNORE_LIST: &[&str] = &["algorist/tpl", ".DS_Store", "target"];
 
 pub fn copy(dir: &Dir, glob: &str, target: &Path) -> std::io::Result<()> {
-    let entries = dir
-        .find(glob)
-        .map_err(|e| {
-            std::io::Error::new(
-                std::io::ErrorKind::NotFound,
-                format!("Failed to find glob pattern '{glob}': {e}"),
-            )
-        })?
-        .filter(|d| {
-            !IGNORE_LIST
-                .iter()
-                .any(|&ignore| d.path().starts_with(ignore))
-        });
+    let entries = dir.find(glob).map_err(|e| {
+        std::io::Error::new(
+            std::io::ErrorKind::NotFound,
+            format!("Failed to find glob pattern '{glob}': {e}"),
+        )
+    })?;
     for entry in entries {
         if let Some(file) = entry.as_file() {
             let rel_path = file.path();

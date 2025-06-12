@@ -22,7 +22,6 @@ path = "src/main.rs"
 argh = "0.1.13"
 anyhow = "1.0"
 include_dir = { version = "0.7", features = ["glob"] }
-regex = "1.11"
 syn = { version = "2", features = [
   "full",
   "visit",

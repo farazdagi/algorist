@@ -1,4 +1,5 @@
 use std::collections::{BTreeSet, HashMap, HashSet};
+use std::fmt;
 use std::sync::LazyLock;
 
 use prettyplease::unparse;
@@ -41,9 +42,54 @@ impl SubCmd for BundleProblemSubCmd {
     }
 }
 
+const MAIN_MOD: &str = "algorist";
+
 #[derive(Debug, Hash, Clone, PartialEq, Eq, PartialOrd, Ord)]
 struct UsedMod {
     segments: Vec<String>,
+}
+
+/// Represents a set of used modules and their paths.
+///
+/// Paths are calculated based on the used modules. Each segment in a used
+/// module is part of some path. So, for example, if we have a used module
+/// `algorist::foo::bar`, it means that we have three paths:
+/// `/algorist`, `/algorist/foo`, and `/algorist/foo/bar`.
+#[derive(Debug, Default, Clone)]
+struct UsedMods {
+    mods: BTreeSet<UsedMod>,
+    paths: BTreeSet<String>,
+}
+
+impl UsedMods {
+    fn new() -> Self {
+        Self {
+            mods: BTreeSet::new(),
+            paths: BTreeSet::new(),
+        }
+    }
+
+    fn insert(&mut self, segments: Vec<String>) {
+        let used_mod = UsedMod { segments };
+
+        // Traverse the segments and create paths.
+        let mut path = String::new();
+        for segment in &used_mod.segments {
+            if !path.is_empty() {
+                path.push('/');
+            }
+            path.push_str(segment);
+            self.paths.insert(path.clone());
+        }
+
+        // Insert the used module itself.
+        self.mods.insert(used_mod);
+    }
+
+    /// Check if path is contained in the set of used modules.
+    fn contains(&self, other: &str) -> bool {
+        self.paths.contains(other)
+    }
 }
 
 trait BunlingPhase {}
@@ -52,12 +98,13 @@ mod phases {
     use super::*;
 
     pub struct ProcessBinaryFile {
-        pub used_mods: BTreeSet<UsedMod>,
+        pub used_mods: UsedMods,
     }
 
     pub struct ProcessLibraryFile {
-        pub used_mods: BTreeSet<UsedMod>,
+        pub used_mods: UsedMods,
         pub base_path: PathBuf,
+        pub base_path_relative: String,
     }
 
     pub struct BundlingCompleted;
@@ -71,6 +118,7 @@ mod phases {
 struct BundlerContext {
     main_mod: String,
     problem_id: String,
+    root_path: String,
     src: PathBuf,
     dst: PathBuf,
     out: BufWriter<File>,
@@ -88,9 +136,14 @@ impl BundlerContext {
         let dst = PathBuf::from(format!("./bundled/{}.rs", problem_id));
         let out = BufWriter::new(File::create(&dst).context("failed to create output file")?);
 
+        let root_path = PathBuf::from("src")
+            .canonicalize()
+            .context("Failed to canonicalize src path")?;
+
         Ok(Self {
             main_mod: MAIN_MOD.to_string(),
             problem_id: problem_id.to_string(),
+            root_path: root_path.display().to_string(),
             src,
             dst,
             out,
@@ -109,7 +162,7 @@ impl<'a> Bundler1<'a, phases::ProcessBinaryFile> {
         Ok(Self {
             ctx,
             state: phases::ProcessBinaryFile {
-                used_mods: BTreeSet::new(),
+                used_mods: UsedMods::new(),
             },
         })
     }
@@ -134,6 +187,8 @@ impl<'a> Bundler1<'a, phases::ProcessBinaryFile> {
         // Write the source file -- unmodified -- to the output file.
         writeln!(self.ctx.out, "{}", unparse(&ast)).context("failed to write source file")?;
 
+        println!("Used modules: {:?}", self.state.used_mods);
+
         Ok(Bundler1 {
             ctx: self.ctx,
             state: phases::ProcessLibraryFile {
@@ -141,6 +196,7 @@ impl<'a> Bundler1<'a, phases::ProcessBinaryFile> {
                 base_path: PathBuf::from("src")
                     .canonicalize()
                     .context("failed to canonicalize src path")?,
+                base_path_relative: "".to_string(),
             },
         })
     }
@@ -163,11 +219,11 @@ impl<'a> Bundler1<'a, phases::ProcessBinaryFile> {
         match tree {
             syn::UseTree::Name(name) => {
                 segments.push(name.ident.to_string());
-                self.state.used_mods.insert(UsedMod { segments });
+                self.state.used_mods.insert(segments);
             }
             syn::UseTree::Rename(rename) => {
                 segments.push(rename.ident.to_string());
-                self.state.used_mods.insert(UsedMod { segments });
+                self.state.used_mods.insert(segments);
             }
             syn::UseTree::Group(group) => {
                 for item in &group.items {
@@ -182,14 +238,12 @@ impl<'a> Bundler1<'a, phases::ProcessBinaryFile> {
                             item.to_token_stream().to_string()
                         ));
                     }
-                    self.state.used_mods.insert(UsedMod {
-                        segments: item_segments,
-                    });
+                    self.state.used_mods.insert(item_segments);
                 }
             }
             syn::UseTree::Glob(_) => {
                 // We don't need to do anything here, we already have all segments.
-                self.state.used_mods.insert(UsedMod { segments });
+                self.state.used_mods.insert(segments);
             }
             _ => {}
         }
@@ -226,7 +280,7 @@ impl<'a> Bundler1<'a, phases::ProcessLibraryFile> {
         let mod_item = syn::Item::Mod(syn::ItemMod {
             unsafety: None,
             attrs: vec![
-                parse_quote!(#[doc = " [Algorist](https://crates.io/crates/algorist) library"]),
+                parse_quote!(#[doc = " Generated using [Algorist](https://crates.io/crates/algorist)"]),
                 parse_quote!(#[allow(dead_code)]),
                 parse_quote!(#[allow(unused_imports)]),
                 parse_quote!(#[allow(unused_macros)]),
@@ -243,7 +297,7 @@ impl<'a> Bundler1<'a, phases::ProcessLibraryFile> {
         writeln!(self.ctx.out, "{}", unparse(&ast)).context("failed to write bundled file")?;
 
         // println!("Code {}", quote::quote!(#ast).to_string());
-        println!("Code(unparse)\n{}", unparse(&ast));
+        // println!("Code(unparse)\n{}", unparse(&ast));
         // println!(
         //     "Code(prettify)\n{}",
         //     prettify((&ast).into_token_stream().to_string())
@@ -253,6 +307,29 @@ impl<'a> Bundler1<'a, phases::ProcessLibraryFile> {
             ctx: self.ctx,
             state: phases::BundlingCompleted,
         })
+    }
+
+    fn is_used_in_binary(&self, node: &syn::ItemMod) -> bool {
+        // If base path is not empty, prefix the module name with it.
+        let mod_name = node.ident.to_string();
+        let mod_name = if self.state.base_path_relative.is_empty() {
+            mod_name
+        } else {
+            format!("{}/{}", self.state.base_path_relative, mod_name)
+                .strip_prefix('/')
+                .unwrap_or(&mod_name)
+                .to_string()
+        };
+
+        println!(
+            "->Checking if module {mod_name} is used base_path: {:?}",
+            self.state.base_path_relative
+        );
+
+        let res = self.state.used_mods.contains(&mod_name);
+        println!("{:?} res: {}", mod_name, if res { "yes" } else { "no" });
+
+        res
     }
 
     fn process_item_mod_mut(&mut self, node: &mut syn::ItemMod) {
@@ -294,11 +371,17 @@ impl<'a> Bundler1<'a, phases::ProcessLibraryFile> {
         let mut ast = parse_file(&code)
             .context("failed to parse source file")
             .expect("Failed to parse module file");
+
+        let base_path_relative = base_path
+            .display()
+            .to_string()
+            .replace(&self.ctx.root_path, "");
         Bundler1 {
             ctx: self.ctx,
             state: phases::ProcessLibraryFile {
                 used_mods: self.state.used_mods.clone(),
                 base_path,
+                base_path_relative,
             },
         }
         .visit_file_mut(&mut ast);
@@ -329,12 +412,54 @@ impl<'a> VisitMut for Bundler1<'a, phases::ProcessLibraryFile> {
         }
     }
 
+    fn visit_item_mut(&mut self, node: &mut syn::Item) {
+        match node {
+            syn::Item::Mod(item) => {
+                fn is_test_module(item_mod: &syn::ItemMod) -> bool {
+                    // locate `#[cfg(test)]` attribute
+                    item_mod.attrs.iter().any(|attr| {
+                        if attr.path().is_ident("cfg") {
+                            let cfg_args: syn::Expr = attr.parse_args().unwrap();
+                            if let syn::Expr::Path(syn::ExprPath { path, .. }) = cfg_args {
+                                return path.is_ident("test");
+                            }
+                        }
+                        false
+                    })
+                }
+
+                // Skip test modules.
+                if is_test_module(item) {
+                    *node = syn::Item::Verbatim(quote::quote! {
+                        /* removed by bundle_problem */
+                    });
+                    return;
+                }
+
+                // Skip modules that are not used in the binary.
+                println!("\n\nProcessing module: {}", item.ident.to_string());
+                if !self.is_used_in_binary(item) {
+                    // Remove only if module's content hasn't be populated already.
+                    if item.content.is_none() {
+                        *node = syn::Item::Verbatim(quote::quote! {});
+                    }
+                    return;
+                }
+
+                self.visit_item_mod_mut(item);
+            }
+
+            _ => {
+                syn::visit_mut::visit_item_mut(self, node);
+            }
+        }
+    }
+
     fn visit_item_mod_mut(&mut self, node: &mut syn::ItemMod) {
         self.visit_attributes_mut(&mut node.attrs);
         self.visit_visibility_mut(&mut node.vis);
         self.visit_ident_mut(&mut node.ident);
 
-        // process mods
         self.process_item_mod_mut(node);
 
         if let Some(it) = &mut node.content {
@@ -346,6 +471,35 @@ impl<'a> VisitMut for Bundler1<'a, phases::ProcessLibraryFile> {
 
     fn visit_path_mut(&mut self, path: &mut syn::Path) {
         // dbg!(path);
+    }
+
+    fn visit_use_tree_mut(&mut self, node: &mut syn::UseTree) {
+        fn fix_crate_use_path(node: &mut syn::UseTree) {
+            // Replace `crate::` with `crate::algorist::` in use paths.
+            // Basically you just inject `algorist::` after `crate::`.
+            if let syn::UseTree::Path(path) = node {
+                if path.ident == "crate" {
+
+                    if let syn::UseTree::Path(inner_path) = &*path.tree {
+                        if inner_path.ident == MAIN_MOD {
+                            // Already rewritten, do nothing
+                            return;
+                        }
+                    }
+
+                    let new_path = syn::UseTree::Path(syn::UsePath {
+                        ident: syn::Ident::new(MAIN_MOD, path.ident.span()),
+                        colon2_token: Default::default(),
+                        tree: Box::new(*path.tree.clone()),
+                    });
+                    path.tree = Box::new(new_path);
+                }
+            }
+        }
+
+        fix_crate_use_path(node);
+
+        syn::visit_mut::visit_use_tree_mut(self, node);
     }
 }
 
@@ -359,8 +513,6 @@ impl<'a> Bundler1<'a, phases::BundlingCompleted> {
         Ok(())
     }
 }
-
-const MAIN_MOD: &str = "algorist";
 
 static RE_MOD: LazyLock<Regex> =
     LazyLock::new(|| regex_line(r" (pub  )?mod  (?P<m>.+) ; ").unwrap());

@@ -159,15 +159,11 @@ readable as possible (it is NOT just a dump of everything).
 
 ## Included algorithms and data structures
 
-The crate is also a library of algorithms and data structures, which will be copied into your
+The Algorist is also a library of algorithms and data structures, which will be copied into your
 contest project, and can be used in your problem files.
 
-| Module | Description |
-| --- | --- |
-| [`io`](https://docs.rs/algorist/latest/algorist/io/) | Input/output helpers, including `Scanner` for reading input and `wln!` macro for writing output. |
-
-See [`Modules`](https://docs.rs/algorist/latest/algorist/#modules) section in the documentation for
-a complete list of available modules.
+See [`algorist`](https://docs.rs/algorist/latest/algorist/algorist/) module documentation for a
+complete list of available algorithms and data structures, as well as their usage examples.
 
 ## License
 

@@ -113,8 +113,10 @@
 //! [`factors`] function or the [`Factors`] trait.
 //!
 //! ```
-//! use algorist::ext::vec::sorted::Sorted;
-//! use algorist::math::primes::{Factors, factors};
+//! use algorist::{
+//!     ext::vec::sorted::Sorted,
+//!     math::primes::{Factors, factors},
+//! };
 //!
 //! assert_eq!(factors(30).sorted(), vec![1, 2, 3, 5, 6, 10, 15, 30]);
 //! assert_eq!(30.factors().sorted(), vec![1, 2, 3, 5, 6, 10, 15, 30]);
@@ -616,8 +618,7 @@ pub fn factorize(n: usize) -> Vec<PrimeFactor> {
 /// # Example
 ///
 /// ```
-/// use algorist::ext::vec::sorted::Sorted;
-/// use algorist::math::primes::Factors;
+/// use algorist::{ext::vec::sorted::Sorted, math::primes::Factors};
 ///
 /// assert_eq!(30.factors().sorted(), vec![1, 2, 3, 5, 6, 10, 15, 30]);
 /// assert_eq!(60.factors().sorted(), vec![
@@ -641,8 +642,7 @@ impl<T: Number + AsPrimitive<usize>> Factors for T {}
 ///
 /// # Example
 /// ```
-/// use algorist::ext::vec::sorted::Sorted;
-/// use algorist::math::primes::factors;
+/// use crate::algorist::{ext::vec::sorted::Sorted, math::primes::factors};
 ///
 /// assert_eq!(factors(1), vec![1]);
 /// assert_eq!(
@@ -687,8 +687,7 @@ fn generate_combinations(factor_powers: &Vec<Vec<usize>>, i: usize, product: usi
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::ext::vec::sorted::Sorted;
+    use {super::*, crate::ext::vec::sorted::Sorted};
 
     #[test]
     fn test_is_prime() {

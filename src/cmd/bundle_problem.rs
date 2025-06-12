@@ -479,7 +479,6 @@ impl<'a> VisitMut for Bundler1<'a, phases::ProcessLibraryFile> {
             // Basically you just inject `algorist::` after `crate::`.
             if let syn::UseTree::Path(path) = node {
                 if path.ident == "crate" {
-
                     if let syn::UseTree::Path(inner_path) = &*path.tree {
                         if inner_path.ident == MAIN_MOD {
                             // Already rewritten, do nothing

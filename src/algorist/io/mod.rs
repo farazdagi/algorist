@@ -22,9 +22,10 @@
 //! ```
 //!
 //! ``` no_run
-//! use std::io;
-//!
-//! use algorist::io::{Scanner, wln};
+//! use {
+//!     algorist::io::{Scanner, wln},
+//!     std::io,
+//! };
 //!
 //! let mut scan = Scanner::new(io::stdin().lock());
 //!
@@ -51,9 +52,10 @@
 //! ```
 //!
 //! ``` no_run
-//! use std::io::{self, Write};
-//!
-//! use algorist::io::{Scanner, wln};
+//! use {
+//!     algorist::io::{Scanner, wln},
+//!     std::io::{self, Write},
+//! };
 //!
 //! // Initialize a `Scanner` for reading input and a `BufWriter` for output.
 //! let mut scan = Scanner::new(io::stdin().lock());
@@ -69,8 +71,7 @@
 //!     wln!(w, "{}", vals.len());
 //! });
 //! ```
-use std::collections::VecDeque;
-use std::io::prelude::*;
+use std::{collections::VecDeque, io::prelude::*};
 
 /// Scanner reads buffered input and parses it into tokens.
 ///
@@ -90,9 +91,10 @@ impl<R: BufRead> Scanner<R> {
     ///
     /// # Example
     /// ``` no_run
-    /// use std::io::{self, BufReader, Write};
-    ///
-    /// use algorist::io::Scanner;
+    /// use {
+    ///     algorist::io::Scanner,
+    ///     std::io::{self, BufReader, Write},
+    /// };
     ///
     /// // Read from standard input.
     /// let mut scan = Scanner::new(io::stdin().lock());
@@ -122,9 +124,7 @@ impl<R: BufRead> Scanner<R> {
     /// # Example
     ///
     /// ```
-    /// use std::io::BufReader;
-    ///
-    /// use algorist::io::Scanner;
+    /// use {algorist::io::Scanner, std::io::BufReader};
     ///
     /// let input = b"42 3.14 hello\n";
     /// let mut scan = Scanner::new(BufReader::new(input.as_ref()));
@@ -165,9 +165,7 @@ impl<R: BufRead> Scanner<R> {
     /// # Example
     ///
     /// ```
-    /// use std::io::BufReader;
-    ///
-    /// use algorist::io::Scanner;
+    /// use {algorist::io::Scanner, std::io::BufReader};
     ///
     /// let input = b"2\n1 2\n3 4\n";
     /// let mut scan = Scanner::new(BufReader::new(input.as_ref()));
@@ -191,9 +189,7 @@ impl<R: BufRead> Scanner<R> {
     /// # Example
     ///
     /// ```
-    /// use std::io::BufReader;
-    ///
-    /// use algorist::io::Scanner;
+    /// use {algorist::io::Scanner, std::io::BufReader};
     ///
     /// let input = b"42\n";
     /// let mut scan = Scanner::new(BufReader::new(input.as_ref()));
@@ -209,9 +205,7 @@ impl<R: BufRead> Scanner<R> {
     /// # Example
     ///
     /// ```
-    /// use std::io::BufReader;
-    ///
-    /// use algorist::io::Scanner;
+    /// use {algorist::io::Scanner, std::io::BufReader};
     ///
     /// let input = b"42 43\n";
     /// let mut scan = Scanner::new(BufReader::new(input.as_ref()));
@@ -261,9 +255,7 @@ impl<R: BufRead> Scanner<R> {
     ///
     /// # Example
     /// ```
-    /// use std::io::BufReader;
-    ///
-    /// use algorist::io::Scanner;
+    /// use {algorist::io::Scanner, std::io::BufReader};
     ///
     /// let input = b"1 2\n";
     /// let mut scan = Scanner::new(BufReader::new(input.as_ref()));
@@ -307,9 +299,7 @@ impl<R: BufRead> Scanner<R> {
     ///
     /// # Example
     /// ```
-    /// use std::io::BufReader;
-    ///
-    /// use algorist::io::Scanner;
+    /// use {algorist::io::Scanner, std::io::BufReader};
     ///
     /// let input = b"1 2 3\n";
     /// let mut scan = Scanner::new(BufReader::new(input.as_ref()));
@@ -327,9 +317,7 @@ impl<R: BufRead> Scanner<R> {
     ///
     /// # Example
     /// ```
-    /// use std::io::BufReader;
-    ///
-    /// use algorist::io::Scanner;
+    /// use {algorist::io::Scanner, std::io::BufReader};
     ///
     /// let input = b"1 2 3\n";
     /// let mut scan = Scanner::new(BufReader::new(input.as_ref()));
@@ -348,10 +336,10 @@ impl<R: BufRead> Scanner<R> {
     ///
     /// # Example
     /// ```
-    /// use std::collections::VecDeque;
-    /// use std::io::BufReader;
-    ///
-    /// use algorist::io::Scanner;
+    /// use {
+    ///     algorist::io::Scanner,
+    ///     std::{collections::VecDeque, io::BufReader},
+    /// };
     ///
     /// let input = b"1 2 3\n";
     /// let mut scan = Scanner::new(BufReader::new(input.as_ref()));
@@ -369,10 +357,10 @@ impl<R: BufRead> Scanner<R> {
     ///
     /// # Example
     /// ```
-    /// use std::collections::HashSet;
-    /// use std::io::BufReader;
-    ///
-    /// use algorist::io::Scanner;
+    /// use {
+    ///     algorist::io::Scanner,
+    ///     std::{collections::HashSet, io::BufReader},
+    /// };
     ///
     /// let input = b"1 2 3\n";
     /// let mut scan = Scanner::new(BufReader::new(input.as_ref()));
@@ -410,9 +398,10 @@ fn wv<W: Write, T: std::fmt::Display>(w: &mut W, v: &[T]) {
 ///
 /// # Example
 /// ```
-/// use std::io::{self, Write};
-///
-/// use algorist::io::wln;
+/// use {
+///     algorist::io::wln,
+///     std::io::{self, Write},
+/// };
 ///
 /// let mut w = io::BufWriter::new(io::stdout().lock());
 ///
@@ -437,10 +426,7 @@ pub fn wvln<W: Write, T: std::fmt::Display>(w: &mut W, v: &[T]) {
 
 #[cfg(test)]
 mod tests {
-    use std::io::BufReader;
-
-    use super::*;
-    use crate::io::Scanner;
+    use {super::*, crate::io::Scanner, std::io::BufReader};
 
     #[test]
     fn read_test_cases() {

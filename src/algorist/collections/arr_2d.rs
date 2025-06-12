@@ -1,9 +1,9 @@
 #![allow(dead_code)]
 
-use std::fmt::Debug;
-use std::io::BufRead;
-
-use crate::io::Scanner;
+use {
+    crate::io::Scanner,
+    std::{fmt::Debug, io::BufRead},
+};
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct Arr2d<T: Debug> {
@@ -293,9 +293,7 @@ impl<'a, T: Debug> IntoIterator for &'a Arr2d<T> {
 
 #[cfg(test)]
 mod tests {
-    use std::io;
-
-    use super::*;
+    use {super::*, std::io};
 
     #[test]
     fn test_1() {

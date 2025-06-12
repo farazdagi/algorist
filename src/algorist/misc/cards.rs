@@ -1,7 +1,7 @@
-use std::fmt;
-use std::io::BufRead;
-
-use crate::io::Scanner;
+use {
+    crate::io::Scanner,
+    std::{fmt, io::BufRead},
+};
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 pub enum CardRank {

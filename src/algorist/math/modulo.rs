@@ -1,24 +1,28 @@
-use std::cmp::PartialOrd;
-use std::fmt::{Debug, Display};
-use std::marker::PhantomData;
-use std::ops::{
-    Add,
-    AddAssign,
-    BitAnd,
-    Div,
-    DivAssign,
-    Mul,
-    MulAssign,
-    Neg,
-    ShrAssign,
-    Sub,
-    SubAssign,
+use {
+    crate::{
+        ext::slice::sum::{MaxSum, max_sum_from_iter},
+        math::{ConstValue, Downcast, Invertible, Number, gcd::gcd_extended},
+    },
+    std::{
+        cmp::PartialOrd,
+        fmt::{Debug, Display},
+        marker::PhantomData,
+        ops::{
+            Add,
+            AddAssign,
+            BitAnd,
+            Div,
+            DivAssign,
+            Mul,
+            MulAssign,
+            Neg,
+            ShrAssign,
+            Sub,
+            SubAssign,
+        },
+        str::FromStr,
+    },
 };
-use std::str::FromStr;
-
-use crate::ext::slice::sum::{MaxSum, max_sum_from_iter};
-use crate::math::gcd::gcd_extended;
-use crate::math::{ConstValue, Downcast, Invertible, Number};
 
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Default)]
 pub struct Modulo<T, M: ConstValue<T>> {
@@ -235,10 +239,7 @@ pub use ma_impl as ma;
 
 #[cfg(test)]
 mod tests {
-    use std::i64;
-
-    use super::*;
-    use crate::math::Value;
+    use {super::*, crate::math::Value, std::i64};
 
     #[test]
     fn modulo_creation() {

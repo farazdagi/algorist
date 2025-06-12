@@ -13,11 +13,16 @@ pub mod modulo;
 pub mod primes;
 pub mod root;
 
-use core::fmt::Display;
-use std::convert::From;
-use std::fmt::Debug;
-use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Rem, RemAssign, Sub, SubAssign};
-use std::str::FromStr;
+pub use gcd::{gcd, gcd_extended, lcm};
+use {
+    core::fmt::Display,
+    std::{
+        convert::From,
+        fmt::Debug,
+        ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Rem, RemAssign, Sub, SubAssign},
+        str::FromStr,
+    },
+};
 
 /// Wrapper for a value of type `T`.
 pub trait Value<T>: Copy + Clone + Eq + Ord + Default {

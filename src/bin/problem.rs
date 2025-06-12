@@ -1,6 +1,7 @@
-use std::io::{self, Write};
-
-use algorist::io::{Scanner, wln};
+use {
+    algorist::io::{Scanner, wln},
+    std::io::{self, Write},
+};
 
 fn main() {
     let mut scan = Scanner::new(io::stdin().lock());

@@ -2,12 +2,14 @@ pub mod add_problem;
 pub mod bundle_problem;
 pub mod new_contest;
 
-use add_problem::AddProblemSubCmd;
 use {
+    add_problem::AddProblemSubCmd,
     anyhow::Result,
     argh::FromArgs,
     bundle_problem::BundleProblemSubCmd,
+    include_dir::{Dir, include_dir},
     new_contest::NewContestSubCmd,
+    std::{fs, path::Path},
 };
 
 pub trait SubCmd {
@@ -39,4 +41,47 @@ impl MainCmd {
             TopLevelCmdEnum::Add(add_cmd) => add_cmd.run(),
         }
     }
+}
+
+pub static SRC_DIR: Dir = include_dir!("$CARGO_MANIFEST_DIR/src");
+pub static RUSTFMT_TOML: &str = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/rustfmt.toml"));
+pub static GITIGNORE: &str = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/.gitignore"));
+static IGNORE_LIST: &[&str] = &["algorist/tpl"];
+
+pub fn copy(dir: &Dir, glob: &str, target: &Path) -> std::io::Result<()> {
+    let entries = dir
+        .find(glob)
+        .map_err(|e| {
+            std::io::Error::new(
+                std::io::ErrorKind::NotFound,
+                format!("Failed to find glob pattern '{glob}': {e}"),
+            )
+        })?
+        .filter(|d| {
+            println!("Copying: {}", d.path().display());
+            !IGNORE_LIST
+                .iter()
+                .any(|&ignore| d.path().starts_with(ignore))
+        });
+    for entry in entries {
+        if let Some(file) = entry.as_file() {
+            let rel_path = file.path();
+            let dest_path = target.join(rel_path);
+            if let Some(parent) = dest_path.parent() {
+                fs::create_dir_all(parent)?;
+            }
+            fs::write(dest_path, file.contents())?;
+        }
+    }
+    Ok(())
+}
+
+pub fn copy_to(dir: &Dir, src: &str, target: &Path) -> std::io::Result<()> {
+    let file = dir
+        .get_file(src)
+        .unwrap_or_else(|| panic!("file should exist in template directory: {src}"));
+    if let Some(parent) = target.parent() {
+        fs::create_dir_all(parent)?;
+    }
+    fs::write(target, file.contents())
 }

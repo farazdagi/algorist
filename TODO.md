@@ -4,6 +4,11 @@
 - [ ] `justfile` to minimize typing requirements
 - [ ] Document existing algorithms and data structures.
   - [ ] `math`
+    - [x] `primes`
+    - [ ] `gcd`
+    - [ ] `root`
+    - [ ] `modulo`
+    - [ ] `log`
   - [ ] `ext`
   - [ ] `collections`
   - [ ] `misc`
@@ -12,3 +17,5 @@
 - [ ] How to contribute (and develop your own version of library).
 - [ ] Plan extension of the library with more algorithms and data structures.
 - [ ] Allow re-exports (expose primes in math module and make sure that bundling works)
+- [ ] Return back `rustfmt.toml` that groups modules by category.
+- [ ] Allow to use external `algos` lib -- ensure that `include_dir` compatible template source is used.

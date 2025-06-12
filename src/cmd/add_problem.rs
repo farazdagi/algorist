@@ -1,12 +1,9 @@
 use {
-    crate::cmd::SubCmd,
+    crate::cmd::{SRC_DIR, SubCmd, copy_to},
     anyhow::{Context, Result, anyhow},
     argh::FromArgs,
     std::{fs, path::PathBuf},
 };
-
-use crate::cmd::new_contest::TPL_DIR;
-use crate::cmd::new_contest::copy_to;
 
 /// Add a problem template to `src/bin/`.
 #[derive(FromArgs)]
@@ -42,7 +39,7 @@ impl SubCmd for AddProblemSubCmd {
             return Err(anyhow!("Problem file already exists: {:?}", target_file));
         }
 
-        copy_to(&TPL_DIR, "problem.rs", &target_file)?;
+        copy_to(&SRC_DIR, "bin/problem.rs", &target_file)?;
 
         println!("Problem template added at {target_file:?}");
 

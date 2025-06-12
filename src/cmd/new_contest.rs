@@ -52,7 +52,7 @@ impl NewContestSubCmd {
         println!("Copying template files to the contest directory...");
         copy(&SRC_DIR, "algorist/**/*", &target.join("src"))?;
         copy_to(&TPL_DIR, "lib.rs", &target.join("src/lib.rs"))?;
-        copy_to(&TPL_DIR, "Cargo.toml", &target.join("Cargo.toml"))?;
+        copy_to(&TPL_DIR, "Cargo.toml.tpl", &target.join("Cargo.toml"))?;
 
         // Copy files from root directory.
         fs::write(target.join(".gitignore"), GITIGNORE)?;

@@ -13,7 +13,6 @@ pub mod modulo;
 pub mod primes;
 pub mod root;
 
-pub use gcd::{gcd, gcd_extended, lcm};
 use {
     core::fmt::Display,
     std::{
@@ -46,7 +45,7 @@ macro_rules! value_impl {
         #[derive(Copy, Clone, Eq, PartialEq, Hash, Ord, PartialOrd, Default)]
         pub struct $name {}
 
-        impl $crate::math::ConstValue<$t> for $name {
+        impl $crate::algorist::math::ConstValue<$t> for $name {
             const VAL: $t = $val;
         }
     };
@@ -66,7 +65,7 @@ pub trait One {
 #[macro_export]
 macro_rules! zero_impl {
     ($($t: ident)+) => {$(
-        impl $crate::math::Zero for $t {
+        impl $crate::algorist::math::Zero for $t {
             fn zero() -> Self {
                 0
             }
@@ -79,7 +78,7 @@ zero_impl!(i8 i16 i32 i64 i128 isize u8 u16 u32 u64 u128 usize);
 #[macro_export]
 macro_rules! one_impl {
     ($($t: ident)+) => {$(
-        impl $crate::math::One for $t {
+        impl $crate::algorist::math::One for $t {
             fn one() -> Self {
                 1
             }
@@ -102,7 +101,7 @@ pub trait Downcast: Sized {
 #[macro_export]
 macro_rules! downcast_impl {
     ($($t: ident $w: ident),+) => {$(
-        impl $crate::math::Downcast for $t {
+        impl $crate::algorist::math::Downcast for $t {
             type Source = $w;
             fn downcast(src: Self::Source) -> Self {
                 src as $t
@@ -122,7 +121,7 @@ pub trait Upcast: Sized {
 #[macro_export]
 macro_rules! upcast_impl {
     ($($t: ident $w: ident),+) => {$(
-        impl $crate::math::Upcast for $t {
+        impl $crate::algorist::math::Upcast for $t {
             type Target = $w;
             fn upcast(self) -> Self::Target {
                 $w::from(self)
@@ -200,7 +199,7 @@ pub trait AsPrimitive<T> {
 #[macro_export]
 macro_rules! as_primitive_impl {
     ($($t: ident)+) => {$(
-        impl $crate::math::AsPrimitive<$t> for $t {
+        impl $crate::algorist::math::AsPrimitive<$t> for $t {
             fn as_primitive(&self) -> $t {
                 *self
             }
@@ -213,7 +212,7 @@ as_primitive_impl!(i8 i16 i32 i64 i128 isize u8 u16 u32 u64 u128 usize);
 #[macro_export]
 macro_rules! as_primitive_unsigned_impl {
     ($($t: ident)+) => {$(
-        impl $crate::math::AsPrimitive<usize> for $t {
+        impl $crate::algorist::math::AsPrimitive<usize> for $t {
             fn as_primitive(&self) -> usize {
                 *self as usize
             }

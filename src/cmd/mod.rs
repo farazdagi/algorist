@@ -46,7 +46,7 @@ impl MainCmd {
 pub static SRC_DIR: Dir = include_dir!("$CARGO_MANIFEST_DIR/src");
 pub static RUSTFMT_TOML: &str = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/rustfmt.toml"));
 pub static GITIGNORE: &str = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/.gitignore"));
-static IGNORE_LIST: &[&str] = &["algorist/tpl"];
+static IGNORE_LIST: &[&str] = &["algorist/tpl", ".DS_Store", "target"];
 
 pub fn copy(dir: &Dir, glob: &str, target: &Path) -> std::io::Result<()> {
     let entries = dir
@@ -58,7 +58,6 @@ pub fn copy(dir: &Dir, glob: &str, target: &Path) -> std::io::Result<()> {
             )
         })?
         .filter(|d| {
-            println!("Copying: {}", d.path().display());
             !IGNORE_LIST
                 .iter()
                 .any(|&ignore| d.path().starts_with(ignore))

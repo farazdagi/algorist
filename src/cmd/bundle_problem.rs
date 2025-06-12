@@ -1,21 +1,15 @@
-use std::collections::{BTreeSet, HashMap, HashSet};
-use std::fmt;
-use std::sync::LazyLock;
-
-use prettyplease::unparse;
-use quote::ToTokens;
-use syn::parse_quote;
-use syn::{Item, ItemUse, parse_file, visit::Visit, visit_mut::VisitMut};
 use {
     crate::cmd::SubCmd,
-    anyhow::{Context, Result, anyhow},
+    anyhow::{Context, Result},
     argh::FromArgs,
-    regex::Regex,
+    prettyplease::unparse,
     std::{
+        collections::HashSet,
         fs::{self, File},
-        io::{BufRead, BufReader, BufWriter, Write},
+        io::{BufWriter, Write},
         path::PathBuf,
     },
+    syn::{ parse_file, parse_quote, visit::Visit, visit_mut::VisitMut},
 };
 
 /// Bundle given problem into a single file.
@@ -44,11 +38,6 @@ impl SubCmd for BundleProblemSubCmd {
 
 const MAIN_MOD: &str = "algorist";
 
-#[derive(Debug, Hash, Clone, PartialEq, Eq, PartialOrd, Ord)]
-struct UsedMod {
-    segments: Vec<String>,
-}
-
 /// Represents a set of used modules and their paths.
 ///
 /// Paths are calculated based on the used modules. Each segment in a used
@@ -57,33 +46,28 @@ struct UsedMod {
 /// `/algorist`, `/algorist/foo`, and `/algorist/foo/bar`.
 #[derive(Debug, Default, Clone)]
 struct UsedMods {
-    mods: BTreeSet<UsedMod>,
-    paths: BTreeSet<String>,
+    paths: HashSet<String>,
 }
 
 impl UsedMods {
     fn new() -> Self {
         Self {
-            mods: BTreeSet::new(),
-            paths: BTreeSet::new(),
+            paths: HashSet::new(),
         }
     }
 
-    fn insert(&mut self, segments: Vec<String>) {
-        let used_mod = UsedMod { segments };
+    fn insert(&mut self, segments: &[String]) {
+        let segments = segments.to_vec();
 
         // Traverse the segments and create paths.
         let mut path = String::new();
-        for segment in &used_mod.segments {
+        for segment in &segments {
             if !path.is_empty() {
                 path.push('/');
             }
             path.push_str(segment);
             self.paths.insert(path.clone());
         }
-
-        // Insert the used module itself.
-        self.mods.insert(used_mod);
     }
 
     /// Check if path is contained in the set of used modules.
@@ -189,63 +173,60 @@ impl<'a> Bundler1<'a, phases::ProcessBinaryFile> {
 
         println!("Used modules: {:?}", self.state.used_mods);
 
+        let main_mod = self.ctx.main_mod.clone();
         Ok(Bundler1 {
             ctx: self.ctx,
             state: phases::ProcessLibraryFile {
                 used_mods: self.state.used_mods,
-                base_path: PathBuf::from("src")
+                base_path: PathBuf::from("src/algorist")
                     .canonicalize()
                     .context("failed to canonicalize src path")?,
-                base_path_relative: "".to_string(),
+                base_path_relative: main_mod,
             },
         })
     }
 
     fn process_item_use(&mut self, tree: &syn::UseTree) -> Result<()> {
-        let mut segments = Vec::new();
+        use syn::{UseGlob, UseGroup, UseName, UsePath, UseRename, UseTree};
 
-        // Process path segments.
-        let mut tree = tree;
-        while let syn::UseTree::Path(path) = tree {
-            if path.ident == self.ctx.main_mod {
-                tree = &*path.tree;
-                continue;
-            }
-            segments.push(path.ident.to_string());
-            tree = &*path.tree;
-        }
-
-        // Process the final segment, which can be a Name, Rename, Glob or Group.
-        match tree {
-            syn::UseTree::Name(name) => {
-                segments.push(name.ident.to_string());
-                self.state.used_mods.insert(segments);
-            }
-            syn::UseTree::Rename(rename) => {
-                segments.push(rename.ident.to_string());
-                self.state.used_mods.insert(segments);
-            }
-            syn::UseTree::Group(group) => {
-                for item in &group.items {
-                    let mut item_segments = segments.clone();
-                    if let syn::UseTree::Name(name) = item {
-                        item_segments.push(name.ident.to_string());
-                    } else if let syn::UseTree::Rename(rename) = item {
-                        item_segments.push(rename.ident.to_string());
-                    } else {
-                        return Err(anyhow!(
-                            "Unexpected UseTree item: {}",
-                            item.to_token_stream().to_string()
-                        ));
-                    }
-                    self.state.used_mods.insert(item_segments);
+        fn extract_imported_paths(tree: &UseTree, prefix: Vec<String>) -> Vec<Vec<String>> {
+            match tree {
+                UseTree::Path(UsePath { ident, tree, .. }) => {
+                    let mut new_prefix = prefix.clone();
+                    new_prefix.push(ident.to_string());
+                    extract_imported_paths(tree, new_prefix)
+                }
+                UseTree::Name(UseName { ident, .. }) | UseTree::Rename(UseRename { ident, .. }) => {
+                    let mut path = prefix;
+                    path.push(ident.to_string());
+                    vec![path]
+                }
+                UseTree::Group(UseGroup { items, .. }) => items
+                    .iter()
+                    .flat_map(|item| extract_imported_paths(item, prefix.clone()))
+                    .collect(),
+                UseTree::Glob(UseGlob { .. }) => {
+                    // If it's a glob import, we don't have specific paths, so we return
+                    // the current prefix as a single path.
+                    vec![prefix]
                 }
             }
-            syn::UseTree::Glob(_) => {
-                // We don't need to do anything here, we already have all segments.
-                self.state.used_mods.insert(segments);
+        }
+
+        let paths = extract_imported_paths(tree, Vec::new());
+        for path in paths {
+            if path.is_empty() {
+                // Skip empty paths
+                continue;
             }
-            _ => {}
+
+            // Skip paths that do not start with the main module.
+            // Bundler is only interested in imports from the main module.
+            if path[0] != MAIN_MOD || path.len() < 2 {
+                continue;
+            }
+
+            self.state.used_mods.insert(&path[1..]);
         }
 
         Ok(())
@@ -253,7 +234,7 @@ impl<'a> Bundler1<'a, phases::ProcessBinaryFile> {
 }
 
 impl<'ast> Visit<'ast> for Bundler1<'_, phases::ProcessBinaryFile> {
-    fn visit_item_use(&mut self, node: &'ast ItemUse) {
+    fn visit_item_use(&mut self, node: &'ast syn::ItemUse) {
         // Ignore all imports except those from the current crate.
         if let syn::UseTree::Path(path) = &node.tree {
             if path.ident != self.ctx.main_mod {
@@ -268,10 +249,11 @@ impl<'ast> Visit<'ast> for Bundler1<'_, phases::ProcessBinaryFile> {
 
 impl<'a> Bundler1<'a, phases::ProcessLibraryFile> {
     fn process_library_file(mut self) -> Result<Bundler1<'a, phases::BundlingCompleted>> {
-        // Read the library source file to expand all used modules. Modules are expanded
-        // recursively. Modules that are not used in the binary are ignored.
-        let file_content =
-            fs::read_to_string("src/lib.rs").context("failed to read library file")?;
+        // Read the library source file (located in `algorist/mod.rs`) to expand all
+        // used modules. Modules are expanded recursively.
+        // Modules that are not used in the binary are ignored.
+        let file_content = fs::read_to_string(format!("src/{}/mod.rs", self.ctx.main_mod))
+            .context("failed to read library file")?;
         let mut ast = parse_file(&file_content).context("failed to parse library file")?;
         self.visit_file_mut(&mut ast);
 
@@ -318,11 +300,13 @@ impl<'a> Bundler1<'a, phases::ProcessLibraryFile> {
             format!("{}/{}", self.state.base_path_relative, mod_name)
                 .strip_prefix('/')
                 .unwrap_or(&mod_name)
+                .strip_prefix("algorist/")
+                .unwrap_or(&mod_name)
                 .to_string()
         };
 
         println!(
-            "->Checking if module {mod_name} is used base_path: {:?}",
+            "->Checking if module {mod_name:?} is used base_path: {:?}",
             self.state.base_path_relative
         );
 
@@ -469,10 +453,6 @@ impl<'a> VisitMut for Bundler1<'a, phases::ProcessLibraryFile> {
         }
     }
 
-    fn visit_path_mut(&mut self, path: &mut syn::Path) {
-        // dbg!(path);
-    }
-
     fn visit_use_tree_mut(&mut self, node: &mut syn::UseTree) {
         fn fix_crate_use_path(node: &mut syn::UseTree) {
             // Replace `crate::` with `crate::algorist::` in use paths.
@@ -511,259 +491,4 @@ impl<'a> Bundler1<'a, phases::BundlingCompleted> {
 
         Ok(())
     }
-}
-
-static RE_MOD: LazyLock<Regex> =
-    LazyLock::new(|| regex_line(r" (pub  )?mod  (?P<m>.+) ; ").unwrap());
-static RE_COMMENT: LazyLock<Regex> = LazyLock::new(|| regex_line(r" ").unwrap());
-static RE_WARN: LazyLock<Regex> = LazyLock::new(|| regex_line(r" #!\[warn\(.*").unwrap());
-static RE_CFG_TEST: LazyLock<Regex> = LazyLock::new(|| regex_line(r" #\[cfg\(test\)\] ").unwrap());
-static RE_ALLOW_DEAD_CODE: LazyLock<Regex> =
-    LazyLock::new(|| regex_line(r" #.?\[allow\(dead_code\)\] ").unwrap());
-static RE_USE: LazyLock<Regex> =
-    LazyLock::new(|| regex_line(format!(" use  {MAIN_MOD}::(?P<submod>.*)::.*$")).unwrap());
-static RE_USE_CRATE: LazyLock<Regex> = LazyLock::new(|| {
-    regex_line(r" use  (?P<prefix>\{?)crate::(?P<submod>.*)::(?P<postfix>.*)$").unwrap()
-});
-static RE_MACRO_IMPL_CRATE: LazyLock<Regex> =
-    LazyLock::new(|| regex_line(r" impl \$crate::(?P<content>.*) ").unwrap());
-
-struct Bundler {
-    src: PathBuf,
-    dst: PathBuf,
-    out: BufWriter<File>,
-    allow: Vec<String>,
-}
-
-impl Bundler {
-    fn new(src: PathBuf, dst: PathBuf) -> Self {
-        let out = BufWriter::new(File::create(&dst).unwrap());
-        Self {
-            src,
-            dst,
-            out,
-            allow: Vec::new(),
-        }
-    }
-
-    fn run(&mut self) -> Result<()> {
-        let src = self.src.display().to_string();
-        let dst = self.dst.display().to_string();
-        println!("Bundling {src} -> {dst}");
-
-        self.binrs()?;
-        self.librs()?;
-
-        self.out.flush()?;
-        self.out.get_ref().sync_all()?;
-
-        std::process::Command::new("rustfmt")
-            .arg("+nightly")
-            .arg(&self.dst)
-            .status()
-            .with_context(|| format!("Failed to run rustfmt on {:?}", self.dst))?;
-
-        Ok(())
-    }
-
-    fn binrs(&mut self) -> Result<()> {
-        let mut reader = BufReader::new(File::open(&self.src)?);
-        let mut line = String::new();
-        while reader.read_line(&mut line)? > 0 {
-            // preserve empty lines
-            if line == "\n" {
-                self.writeln(&line)?;
-                line.clear();
-                continue;
-            }
-
-            line.pop();
-            if is_ignorable(&line) {
-                line.clear();
-                continue;
-            }
-            if let Some(caps) = RE_USE.captures(&line) {
-                if let Some(m) = caps.name("submod") {
-                    self.extend_allow(m.as_str())?;
-                }
-            }
-
-            self.writeln(&line)?;
-            line.clear();
-        }
-        Ok(())
-    }
-
-    fn extend_allow(&mut self, module: &str) -> Result<()> {
-        if self.allow.contains(&module.to_string()) {
-            return Ok(());
-        }
-
-        println!("allow: {module}");
-
-        let reader = mod_reader(module.to_string().replace("::", "/").as_str())?;
-        let mut cfg_test_occurred = false;
-        let submodules: Vec<String> = reader
-            .lines()
-            .map_while(Result::ok)
-            .filter_map(|l| {
-                if RE_CFG_TEST.is_match(&l) {
-                    cfg_test_occurred = true;
-                }
-                if cfg_test_occurred {
-                    return None;
-                }
-                RE_USE_CRATE
-                    .captures(&l)
-                    .map(|c| c.name("submod").unwrap().as_str().to_string())
-            })
-            .collect();
-
-        let parts = module.split("::");
-        for i in 0..parts.clone().count() {
-            let allow = parts.clone().take(i + 1).collect::<Vec<&str>>().join("::");
-            if !self.allow.contains(&allow) {
-                self.allow.push(allow);
-            }
-        }
-
-        for m in &submodules {
-            self.extend_allow(m).expect("Failed to extend allow list");
-        }
-
-        Ok(())
-    }
-
-    fn librs(&mut self) -> Result<()> {
-        let librs = PathBuf::from("src/lib.rs");
-        if !librs.exists() {
-            return Err(anyhow!("Error: file not found: {:?}", librs));
-        }
-
-        self.writeln("")?;
-        self.writeln("#[allow(dead_code)]")?;
-        self.writeln("#[allow(unused_imports)]")?;
-        self.writeln("#[allow(unused_macros)]")?;
-        self.writeln(&format!("mod {MAIN_MOD} {{"))?;
-
-        let mut reader = BufReader::new(File::open(&librs)?);
-        let mut line = String::new();
-        while reader.read_line(&mut line)? > 0 {
-            line.pop();
-            if is_ignorable(&line) {
-                line.clear();
-                continue;
-            }
-            if let Some(caps) = RE_MOD.captures(&line) {
-                if let Some(m) = caps.name("m") {
-                    self.modrs(m.as_str(), m.as_str(), 1)?;
-                }
-            } else {
-                self.writeln(&line)?;
-            }
-            line.clear();
-        }
-
-        self.writeln("}")?;
-
-        Ok(())
-    }
-
-    fn modrs(&mut self, mod_name: &str, mod_path: &str, lvl: usize) -> Result<()> {
-        // Ignore modules that are not used in the binary.
-        if !self.allow.contains(&mod_path.replace('/', "::")) {
-            println!("ignored module: {mod_name} (path: {mod_path})");
-            return Ok(());
-        }
-
-        println!(
-            "module: {} (path: {})",
-            mod_name,
-            mod_path.replace('/', "::")
-        );
-
-        self.writeln(&format!("pub mod {mod_name} {{"))?;
-
-        let mut reader = mod_reader(mod_path)?;
-        let mut line = String::new();
-        while reader.read_line(&mut line)? > 0 {
-            line.pop();
-            if is_ignorable(&line) {
-                line.clear();
-                continue;
-            }
-            if RE_CFG_TEST.is_match(&line) {
-                break;
-            }
-            if let Some(caps) = RE_USE_CRATE.captures(&line) {
-                if let Some(submod) = caps.name("submod") {
-                    let prefix = caps.name("prefix").map_or("", |m| m.as_str());
-                    let postfix = caps.name("postfix").map_or("", |m| m.as_str());
-                    self.writeln(&format!(
-                        "use {}{}{}::{}",
-                        prefix,
-                        "super::".repeat(lvl),
-                        submod.as_str(),
-                        postfix
-                    ))?;
-                }
-            } else if let Some(caps) = RE_MACRO_IMPL_CRATE.captures(&line) {
-                if let Some(content) = caps.name("content") {
-                    println!("macro: {}", content.as_str());
-                    self.writeln(&format!("impl crate::{}::{}", MAIN_MOD, content.as_str()))?;
-                }
-            } else if let Some(caps) = RE_MOD.captures(&line) {
-                if let Some(m) = caps.name("m") {
-                    self.modrs(m.as_str(), &format!("{}/{}", mod_path, m.as_str()), lvl + 1)?;
-                }
-            } else {
-                self.writeln(&line)?;
-            }
-            line.clear();
-        }
-
-        self.writeln("}")?;
-
-        Ok(())
-    }
-
-    fn writeln(&mut self, line: &str) -> Result<()> {
-        writeln!(self.out, "{line}").map_err(|e| anyhow!(e))
-    }
-}
-
-fn is_ignorable(line: &str) -> bool {
-    RE_COMMENT.is_match(line) || RE_WARN.is_match(line) || RE_ALLOW_DEAD_CODE.is_match(line)
-}
-
-fn mod_reader(mod_path: &str) -> Result<BufReader<File>, anyhow::Error> {
-    let reader = [
-        format!("src/{mod_path}.rs"),
-        format!("src/{mod_path}/mod.rs"),
-    ]
-    .iter()
-    .map(File::open)
-    .find(Result::is_ok)
-    .ok_or_else(|| {
-        anyhow!(
-            "Error: file not found: src/{0}.rs or src/{0}/mod.rs",
-            mod_path,
-        )
-    })?
-    .map(BufReader::new)?;
-    Ok(reader)
-}
-
-fn regex_line<S: AsRef<str>>(source_regex: S) -> Result<Regex> {
-    Regex::new(
-        format!(
-            "^{}(?://.*)?$",
-            source_regex
-                .as_ref()
-                .replace("  ", r"\s+")
-                .replace(' ', r"\s*")
-        )
-        .as_str(),
-    )
-    .map_err(|e| anyhow!(e))
 }

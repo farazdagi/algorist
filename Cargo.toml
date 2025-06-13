@@ -1,6 +1,6 @@
 [package]
 name = "algorist"
-version = "0.6.3"
+version = "0.6.4"
 edition = "2024"
 license = "MIT"
 authors = ["Victor Farazdagi <farazdagi@gmail.com>"]
@@ -31,3 +31,4 @@ syn = { version = "2", features = [
 quote = "1"
 proc-macro2 = "1.0"
 prettyplease = "0.2"
+tap = "1.0"

@@ -9,7 +9,8 @@ use {
         io::{BufWriter, Write},
         path::PathBuf,
     },
-    syn::{ parse_file, parse_quote, visit::Visit, visit_mut::VisitMut},
+    syn::{parse_file, parse_quote, visit::Visit, visit_mut::VisitMut},
+    tap::Tap,
 };
 
 /// Bundle given problem into a single file.
@@ -171,8 +172,6 @@ impl<'a> Bundler1<'a, phases::ProcessBinaryFile> {
         // Write the source file -- unmodified -- to the output file.
         writeln!(self.ctx.out, "{}", unparse(&ast)).context("failed to write source file")?;
 
-        println!("Used modules: {:?}", self.state.used_mods);
-
         let main_mod = self.ctx.main_mod.clone();
         Ok(Bundler1 {
             ctx: self.ctx,
@@ -262,7 +261,6 @@ impl<'a> Bundler1<'a, phases::ProcessLibraryFile> {
         let mod_item = syn::Item::Mod(syn::ItemMod {
             unsafety: None,
             attrs: vec![
-                parse_quote!(#[doc = " Generated using [Algorist](https://crates.io/crates/algorist)"]),
                 parse_quote!(#[allow(dead_code)]),
                 parse_quote!(#[allow(unused_imports)]),
                 parse_quote!(#[allow(unused_macros)]),
@@ -277,13 +275,6 @@ impl<'a> Bundler1<'a, phases::ProcessLibraryFile> {
 
         // Write the modified AST back to the output file.
         writeln!(self.ctx.out, "{}", unparse(&ast)).context("failed to write bundled file")?;
-
-        // println!("Code {}", quote::quote!(#ast).to_string());
-        // println!("Code(unparse)\n{}", unparse(&ast));
-        // println!(
-        //     "Code(prettify)\n{}",
-        //     prettify((&ast).into_token_stream().to_string())
-        // );
 
         Ok(Bundler1 {
             ctx: self.ctx,
@@ -305,15 +296,12 @@ impl<'a> Bundler1<'a, phases::ProcessLibraryFile> {
                 .to_string()
         };
 
-        println!(
-            "->Checking if module {mod_name:?} is used base_path: {:?}",
-            self.state.base_path_relative
-        );
-
-        let res = self.state.used_mods.contains(&mod_name);
-        println!("{:?} res: {}", mod_name, if res { "yes" } else { "no" });
-
-        res
+        self.state.used_mods.contains(&mod_name).tap(|&res| {
+            println!(
+                "- Processing module: {mod_name:?} {}",
+                if res { " [used]" } else { " [ignored]" }
+            );
+        })
     }
 
     fn process_item_mod_mut(&mut self, node: &mut syn::ItemMod) {
@@ -323,7 +311,6 @@ impl<'a> Bundler1<'a, phases::ProcessLibraryFile> {
         }
 
         let mod_name = node.ident.to_string();
-        println!("Processing root module: {mod_name}");
 
         // Load the module file from the source directory.
         // Module may be EITHER in the form of `src/foo.rs` or `src/foo/mod.rs`.
@@ -344,7 +331,6 @@ impl<'a> Bundler1<'a, phases::ProcessLibraryFile> {
             (base_path, p)
         })
         .and_then(|(base_path, mod_path)| {
-            println!("Loading module file: {:?}", mod_path);
             fs::read_to_string(mod_path)
                 .context("failed to read source file")
                 .ok()
@@ -421,7 +407,6 @@ impl<'a> VisitMut for Bundler1<'a, phases::ProcessLibraryFile> {
                 }
 
                 // Skip modules that are not used in the binary.
-                println!("\n\nProcessing module: {}", item.ident.to_string());
                 if !self.is_used_in_binary(item) {
                     // Remove only if module's content hasn't be populated already.
                     if item.content.is_none() {

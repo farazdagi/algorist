@@ -1,6 +1,6 @@
 pub mod add_problem;
 pub mod bundle_problem;
-pub mod new_contest;
+pub mod create_contest;
 
 use {
     add_problem::AddProblemSubCmd,
@@ -8,7 +8,7 @@ use {
     argh::FromArgs,
     bundle_problem::BundleProblemSubCmd,
     include_dir::{Dir, include_dir},
-    new_contest::NewContestSubCmd,
+    create_contest::CreateContestSubCmd,
     std::{fs, path::Path},
 };
 
@@ -21,24 +21,24 @@ pub trait SubCmd {
 #[argh(help_triggers("-h", "--help", "help"))]
 pub struct MainCmd {
     #[argh(subcommand)]
-    nested: TopLevelCmdEnum,
+    nested: Cmd,
 }
 
 #[derive(FromArgs)]
 #[argh(subcommand)]
-enum TopLevelCmdEnum {
-    New(NewContestSubCmd),
-    Bundle(BundleProblemSubCmd),
-    Add(AddProblemSubCmd),
+enum Cmd {
+    NewContest(CreateContestSubCmd),
+    BundleProblem(BundleProblemSubCmd),
+    AddProblem(AddProblemSubCmd),
 }
 
 impl MainCmd {
     /// Run the nested command.
     pub fn run(&self) -> Result<()> {
         match &self.nested {
-            TopLevelCmdEnum::New(new_cmd) => new_cmd.run(),
-            TopLevelCmdEnum::Bundle(bundle_cmd) => bundle_cmd.run(),
-            TopLevelCmdEnum::Add(add_cmd) => add_cmd.run(),
+            Cmd::NewContest(new_cmd) => new_cmd.run(),
+            Cmd::BundleProblem(bundle_cmd) => bundle_cmd.run(),
+            Cmd::AddProblem(add_cmd) => add_cmd.run(),
         }
     }
 }

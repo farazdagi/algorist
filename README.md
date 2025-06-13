@@ -20,8 +20,6 @@ cargo install algorist
 
 Once installed, you can use it as `cargo algorist`.
 
-NB: No point in installing the crate as a library (except for development of the crate itself).
-
 ## Usage
 
 When contesting, you will normally have a set of problems to solve, each of which is identified by a

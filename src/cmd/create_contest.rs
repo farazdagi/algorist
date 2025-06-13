@@ -10,8 +10,8 @@ use {
 
 /// Create a new contest project.
 #[derive(FromArgs)]
-#[argh(subcommand, name = "new")]
-pub struct NewContestSubCmd {
+#[argh(subcommand, name = "create")]
+pub struct CreateContestSubCmd {
     #[argh(positional)]
     /// contest ID
     id: String,
@@ -22,7 +22,7 @@ pub struct NewContestSubCmd {
     empty: bool,
 }
 
-impl SubCmd for NewContestSubCmd {
+impl SubCmd for CreateContestSubCmd {
     fn run(&self) -> Result<()> {
         let root_dir = PathBuf::from("./")
             .canonicalize()
@@ -46,7 +46,7 @@ impl SubCmd for NewContestSubCmd {
     }
 }
 
-impl NewContestSubCmd {
+impl CreateContestSubCmd {
     fn copy_template(&self, target: &Path) -> std::io::Result<()> {
         // Copy the necessary library files for contest project.
         println!("Copying template files to the contest directory...");

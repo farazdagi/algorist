@@ -42,6 +42,7 @@ impl CountOccurrences<usize> for [usize] {
 }
 
 #[cfg(test)]
+#[cfg(feature = "unit_tests")]
 mod tests {
     use super::*;
 

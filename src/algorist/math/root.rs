@@ -39,6 +39,7 @@ impl IntRoot for i64 {
 }
 
 #[cfg(test)]
+#[cfg(feature = "unit_tests")]
 mod tests {
     use super::*;
 

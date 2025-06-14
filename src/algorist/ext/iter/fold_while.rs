@@ -38,6 +38,7 @@ impl<I: Iterator> FoldWhileExt for I {
 }
 
 #[cfg(test)]
+#[cfg(feature = "unit_tests")]
 mod tests {
     use super::*;
 

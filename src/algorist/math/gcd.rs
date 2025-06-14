@@ -1,6 +1,7 @@
-use std::mem::swap;
-
-use super::{Downcast, Number, One, Zero};
+use {
+    super::{Downcast, Number, One, Zero},
+    std::mem::swap,
+};
 
 #[allow(clippy::many_single_char_names)]
 pub fn gcd_extended<T>(a: T, b: T) -> (T, T::Source, T::Source)
@@ -28,6 +29,7 @@ pub fn lcm<T: Number>(a: T, b: T) -> T {
 }
 
 #[cfg(test)]
+#[cfg(feature = "unit_tests")]
 mod tests {
     use super::*;
 

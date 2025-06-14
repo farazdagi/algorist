@@ -46,6 +46,7 @@ pub trait ChunksExt: Iterator {
 impl<I: Iterator> ChunksExt for I {}
 
 #[cfg(test)]
+#[cfg(feature = "unit_tests")]
 mod tests {
     use super::*;
 

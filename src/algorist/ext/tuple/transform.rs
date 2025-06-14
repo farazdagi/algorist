@@ -25,6 +25,7 @@ where
 }
 
 #[cfg(test)]
+#[cfg(feature = "unit_tests")]
 mod tests {
     use super::*;
 

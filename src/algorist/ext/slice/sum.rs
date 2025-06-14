@@ -39,6 +39,7 @@ pub fn max_sum_from_iter<T: Number + Ord, I: Iterator<Item = T>>(iter: I) -> T {
 }
 
 #[cfg(test)]
+#[cfg(feature = "unit_tests")]
 mod tests {
     use super::*;
 

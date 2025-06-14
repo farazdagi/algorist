@@ -263,7 +263,7 @@ impl Iterator for SieveIter {
 /// assert_eq!(primes[3], true);
 /// assert_eq!(primes[4], false);
 /// // and so on...
-///  ```
+/// ```
 pub fn sieve<T: Number + AsPrimitive<usize>>(n: T) -> Vec<bool> {
     let n = n.as_primitive().max(2);
     let mut nums = vec![true; n + 1];
@@ -686,6 +686,7 @@ fn generate_combinations(factor_powers: &Vec<Vec<usize>>, i: usize, product: usi
 }
 
 #[cfg(test)]
+#[cfg(feature = "unit_tests")]
 mod tests {
     use {super::*, crate::ext::vec::sorted::Sorted};
 

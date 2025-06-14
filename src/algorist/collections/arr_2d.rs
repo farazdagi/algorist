@@ -292,6 +292,7 @@ impl<'a, T: Debug> IntoIterator for &'a Arr2d<T> {
 }
 
 #[cfg(test)]
+#[cfg(feature = "unit_tests")]
 mod tests {
     use {super::*, std::io};
 

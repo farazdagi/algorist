@@ -4,4 +4,4 @@ There are numerous algorithms and data structures that can be useful in competit
 
 | Module | Description |
 | --- | --- |
-| [`io`](https://docs.rs/algorist/latest/algorist/io/) | Input/output helpers, including `Scanner` for reading input and `wln!` macro for writing output. |
+| [`io`](module@io) | Input/output helpers, including `Scanner` for reading input and `Writer` for writing output. |

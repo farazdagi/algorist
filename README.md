@@ -37,48 +37,35 @@ used will be bundled, not all available data structures and algorithms).
 To create a new contest project (`contest_id` will be normally contest number):
 
 ``` bash
-cargo algorist new <contest_id>
+cargo algorist create <contest_id>
 
 # examples:
-cargo algorist new 4545
-cargo algorist new contests/4545 # sub-folders are also supported
+cargo algorist create 4545
+cargo algorist create contests/4545 # sub-folders are also supported
 ```
 
 This will create Rust project with all the necessary problem files and algorithm modules copied into
-it.
+it. Problem files will be created in `src/bin` directory, and the library with algorithms and data
+structures will be created in `src/algorist/` module.
 
-The project structure will look something like this:
+``` bash
+# run problem A (`src/bin/a.rs`)
+# it expects input from stdin
+cargo run --bin a
 
-``` text
-contest-4545
-├── src
-│   ├── lib.rs
-│   ├── io
-│   │   └── mod.rs
-│   │   ... some additional modules (math, collections etc)
-│   └── bin
-│       ├── a.rs
-│       ├── b.rs
-│       ├── c.rs
-│       ├── d.rs
-│       ├── e.rs
-│       ├── f.rs
-│       ├── g.rs
-│       └── h.rs
-├── rustfmt.toml
-├── Cargo.toml
-└── Cargo.lock
-
+# it is a normal Rust project, so you can use all the usual commands
+cargo build
+cargo test
 ```
 
 If you don't want to have initial problem files, you can create a new contest project with `--empty`
 flag:
 
 ``` bash
-cargo algorist new <contest_id> --empty
+cargo algorist create <contest_id> --empty
 ```
 
-Later, you can always add problems into `src/bin` directory using:
+Later on, you can always add a problem file into `src/bin` directory, using:
 
 ``` bash
 cargo algorist add <problem_id>
@@ -92,11 +79,13 @@ cargo algorist add a.rs     # same as above
 
 All problems are located in `src/bin/<problem_id>.rs` files. The file will contain entry point
 `main` function, which is expected to read input from standard input and write output to standard
-output:
+output. The starter code for the problem file will look something like this:
 
 ``` rust, no_run
-use std::io::{self, Write};
-use algorist::io::{Scanner, wln};
+use {
+    algorist::io::{Scanner, wln},
+    std::io::{self, Write},
+};
 
 fn main() {
     let mut scan = Scanner::new(io::stdin().lock());
@@ -110,8 +99,11 @@ fn main() {
         wln!(w, "{}", ans);
     });
 }
-
 ```
+
+See the [`documentation`](https://docs.rs/algorist/latest/algorist/algorist/) on `io` module (and
+other provided algorithms and data structures) for more details on the default code provided in
+problem files.
 
 To test a problem, you can use (again, it is a normal Rust project, so you can use all the usual
 machinery):
@@ -124,17 +116,8 @@ pbpaste | cargo run --bin <problem_id>   # gets input from clipboard
 cargo run --bin <problem_id> < input.txt # gets input from file
 ```
 
-NB: See the [`documentation`](https://docs.rs/algorist/latest/algorist/io/) on `io` module for more
-details on the default code provided in problem files.
-
 Once you are happy with your solution, you can submit it to the contest system (by bundling into a
 single file).
-
-To add new problem file into `src/bin` directory, use:
-
-``` bash
-cargo algorist add <problem_id>
-```
 
 ### Bundle the project
 
@@ -146,6 +129,10 @@ To bundle the problem which you are working on, and which might include various 
 
 ``` bash
 cargo algorist bundle <problem_id>
+
+# examples:
+cargo algorist bundle a # `.rs` is not required
+cargo algorist bundle a.rs
 ```
 
 This will create a single output file in `bundled/<problem_id>.rs` file, which can be submitted to

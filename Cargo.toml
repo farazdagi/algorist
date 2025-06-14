@@ -1,6 +1,6 @@
 [package]
 name = "algorist"
-version = "0.6.4"
+version = "0.7.0"
 edition = "2024"
 license = "MIT"
 authors = ["Victor Farazdagi <farazdagi@gmail.com>"]
@@ -13,6 +13,10 @@ keywords = ["algorithms", "data-structures", "codeforces"]
 categories = ["algorithms", "data-structures"]
 default-run = "cargo-algorist"
 exclude = ["src/bin/problem.rs"]
+
+[features]
+unit_tests = []
+default = ["unit_tests"]
 
 [[bin]]
 name = "cargo-algorist"

@@ -238,6 +238,7 @@ macro_rules! ma_impl {
 pub use ma_impl as ma;
 
 #[cfg(test)]
+#[cfg(feature = "unit_tests")]
 mod tests {
     use {super::*, crate::math::Value, std::i64};
 

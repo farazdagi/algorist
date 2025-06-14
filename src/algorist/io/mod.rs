@@ -1,85 +1,249 @@
-//! # I/O operations
-//!
 //! This module features utilities for reading input using the [`Scanner`], and
-//! writing output using the [`wln!`] macro.
+//! writing output using the [`Writer`] and [`macro@wln`] macro.
 //!
 //! # Examples
 //!
-//! The `Scanner` is designed to simplify reading input in competitive
-//! programming. It allows you to read various types of data from standard input
-//! efficiently. Moreover, it supports several most common operations like
-//! reading several test cases, strings, and vectors.
+//! You will typically use the [`test_cases()`] or [`test_case()`] functions, to
+//! obtain a [`Scanner`] and a [`Writer`] when solving contest problems.
 //!
-//! ## Reading a single token
+//! ## Reading input of a single test
 //!
 //! It is less common nowadays, as most contest will provide you with several
-//! test cases, but you can still read a single token using the `Scanner`, if
-//! you need to:
+//! test cases, but you can still do it, if you need to:
 //!
 //! ``` bash
 //! # Input:
-//! 1 2 3 4
+//! 2 3
+//!
+//! # Output:
+//! Sum: 5
 //! ```
 //!
 //! ``` no_run
-//! use {
-//!     algorist::io::{Scanner, wln},
-//!     std::io,
-//! };
+//! use algorist::io::{test_case, wln};
 //!
-//! let mut scan = Scanner::new(io::stdin().lock());
-//!
-//! let a: i32 = scan.next(); // reads a single token and parses it as `i32`
-//! let a: i32 = scan.i(); // same as above
-//!
-//! let b: usize = scan.next();
-//! let b: usize = scan.u();
+//! test_case(&mut |scan, w| {
+//!     let (a, b): (i32, i32) = scan.pair();
+//!     wln!(w, "Sum: {}", a + b);
+//! });
 //! ```
 //!
 //! ## Reading number of test cases and processing them
-//! Normally, in contest programming, you will have several test cases to
-//! process. So, the input will start with a single integer `t`, which is the
-//! number of test cases, followed by `t` test inputs.
 //!
-//! `Scanner` provides a convenient method `test_cases()` to read and process
-//! multiple tests more ergonomically.
+//! Normally, in contest programming, you will have several test cases to
+//! process.
+//!
+//! So, the input will start with a single integer `t`, which is the number of
+//! test cases, followed by `t` test case inputs.
 //!
 //! ``` bash
 //! # Input:
-//! 1
-//! 3
-//! 1 2 3
+//! 2
+//! 3 2
+//! 1 2
+//!
+//! # Output:
+//! Sum: 5
+//! Sum: 3
 //! ```
 //!
 //! ``` no_run
-//! use {
-//!     algorist::io::{Scanner, wln},
-//!     std::io::{self, Write},
-//! };
+//! use algorist::io::{test_cases, wln};
 //!
-//! // Initialize a `Scanner` for reading input and a `BufWriter` for output.
-//! let mut scan = Scanner::new(io::stdin().lock());
-//! let mut w = io::BufWriter::new(io::stdout().lock());
-//!
-//! // Read multiple test cases and process them.
-//! scan.test_cases(&mut |scan| {
-//!     // Each test case reads a `usize` into `n` and then a vector of `n` integers.
-//!     let n = scan.u();
-//!     let vals: Vec<i32> = scan.vec(n);
-//!
-//!     // Simple wrapper around `writeln!` for convenience.
-//!     wln!(w, "{}", vals.len());
+//! test_cases(&mut |scan, w| {
+//!     let (a, b): (i32, i32) = scan.pair();
+//!     wln!(w, "Sum: {}", a + b);
 //! });
 //! ```
-use std::{collections::VecDeque, io::prelude::*};
+//!
+//! As you can see, the difference between reading a single test case and
+//! reading multiple test cases is minimal -- you just need to call different
+//! function, with the same closure.
+
+use std::{
+    collections::VecDeque,
+    io::{self, BufWriter, StdinLock, StdoutLock, Write, prelude::*},
+};
+
+/// A helper function to read multiple test cases from standard input, and write
+/// output to standard output.
+///
+/// # Example
+///
+/// ``` no_run
+/// use algorist::io::{test_cases, wln};
+///
+/// // `test_cases` will read a `t` value from input, and then call the
+/// // provided closure `t` times, allowing you to process each test case.
+/// test_cases(&mut |scan, w| {
+///     // You can use `u2()` to read a pair of `usize` values.
+///     let a = scan.u(); // Read a single `usize`
+///     let b = scan.u(); // Read another `usize`
+///
+///     wln!(w, "Sum: {}", a + b); // Write the sum to output
+/// });
+/// ```
+///
+/// ``` bash
+/// # Input:
+/// 2
+/// 3 2
+/// 2 1
+///
+/// # Output:
+/// Sum: 5
+/// Sum: 3
+/// ```
+///
+/// In case you want to read a single test case, use the [`test_case()`],
+/// instead.
+pub fn test_cases<F: FnMut(&mut Scanner<StdinLock>, &mut Writer<BufWriter<StdoutLock>>)>(
+    f: &mut F,
+) {
+    let mut scan = Scanner::new(io::stdin().lock());
+    let mut w = Writer::new(io::BufWriter::new(io::stdout().lock()));
+
+    scan.test_cases(&mut |scan| {
+        f(scan, &mut w);
+    });
+}
+
+/// A helper function to read a single test case from standard input, and write
+/// to standard output.
+///
+/// # Example
+///
+/// ``` no_run
+/// use algorist::io::{test_case, wln};
+///
+/// test_case(&mut |scan, w| {
+///     // You can use `u2()` to read a pair of `usize` values.
+///     let a = scan.u(); // Read a single `usize`
+///     let b = scan.u(); // Read another `usize`
+///
+///     wln!(w, "Sum: {}", a + b); // Write the sum to output
+/// });
+/// ```
+///
+/// ``` bash
+/// # Input:
+/// 3 2
+///
+/// # Output:
+/// Sum: 5
+/// ```
+pub fn test_case<F: FnMut(&mut Scanner<StdinLock>, &mut Writer<BufWriter<StdoutLock>>)>(f: &mut F) {
+    let mut scan = Scanner::new(io::stdin().lock());
+    let mut w = Writer::new(io::BufWriter::new(io::stdout().lock()));
+    f(&mut scan, &mut w);
+}
+
+/// A `Writer` is a wrapper around `BufWriter<W>` that provides a convenient
+/// interface for writing formatted output, without requiring to import
+/// `std::io::Write` by the client code. It is expected to be used with [`wln!`]
+/// macro.
+///
+/// # Example
+///
+/// ```no_run
+/// use {
+///     algorist::io::{Writer, wln},
+///     std::io,
+/// };
+///
+/// let mut w = Writer::new(io::BufWriter::new(io::stdout().lock()));
+/// wln!(w, "Hello, {}!", "world");
+/// writeln!(w, "This is a test."); // `wln!` is shorter and more ergonomic
+/// ```
+pub struct Writer<W: Write>(BufWriter<W>);
+
+impl<W: Write> Writer<W> {
+    pub fn new(inner: W) -> Self {
+        Self(BufWriter::new(inner))
+    }
+
+    /// Writes a formatted string to the underlying writer.
+    pub fn write_fmt(&mut self, args: std::fmt::Arguments) {
+        let _ = self.0.write_fmt(args);
+    }
+
+    /// Flushes the underlying writer, ensuring all buffered data is written
+    /// out.
+    pub fn flush(&mut self) {
+        let _ = self.0.flush();
+    }
+}
 
 /// Scanner reads buffered input and parses it into tokens.
 ///
-/// Scanner is designed to read input efficiently, and provides methods to parse
-/// various types of data, such as integers, strings, and vectors.
+/// The `Scanner` is designed to simplify reading input in competitive
+/// programming. It allows you to read various types of data from standard input
+/// efficiently. Moreover, it supports several most common operations like
+/// reading several test cases, strings, and vectors.
 ///
-/// It supports reading multiple test cases, allowing to focus on a single test
-/// case input at a time (see [`Scanner::test_cases`]).
+/// ## Reading input of a single test
+///
+/// It is less common nowadays, as most contest will provide you with several
+/// test cases, but you can still read a single test case's input, if you need
+/// to:
+///
+/// ``` bash
+/// # Input:
+/// 1 2 3 4
+/// ```
+///
+/// ``` no_run
+/// use {algorist::io::Scanner, std::io};
+///
+/// let mut scan = Scanner::new(io::stdin().lock());
+///
+/// let a: i32 = scan.next(); // reads a single token and parses it as `i32`
+/// let a: i32 = scan.i(); // same as above
+/// ```
+///
+/// ## Reading input from several test cases
+///
+/// Normally, in contest programming, you will have several test cases to
+/// process. So, the input will start with a single integer `t`, which is the
+/// number of test cases, followed by `t` test inputs.
+///
+/// `Scanner` provides a convenient method
+/// [`test_cases()`](Scanner::test_cases) to read and process multiple tests
+/// more ergonomically.
+///
+/// ``` bash
+/// # Input:
+/// 1
+/// 3
+/// 1 2 3
+/// ```
+///
+/// ``` no_run
+/// use {
+///     algorist::io::{Scanner, wln},
+///     std::io::{self, Write},
+/// };
+///
+/// // Initialize a `Scanner` for reading input and a `BufWriter` for output.
+/// let mut scan = Scanner::new(io::stdin().lock());
+/// let mut w = io::BufWriter::new(io::stdout().lock());
+///
+/// // Read multiple test cases and process them.
+/// scan.test_cases(&mut |scan| {
+///     // Each test case reads a `usize` into `n` and then a vector of `n` integers.
+///     let n = scan.u();
+///     let vals: Vec<i32> = scan.vec(n);
+///
+///     // Simple wrapper around `writeln!` for convenience.
+///     wln!(w, "{}", vals.len());
+/// });
+/// ```
+///
+/// # Important Note
+///
+/// For even more ergonomic usage, rely on the stand-alone [`test_cases()`]
+/// which will create a [`Scanner`] and a [`Writer`] for you, and pass them to
+/// the closure.
 pub struct Scanner<R> {
     reader: R,
     buffer: Vec<u8>,
@@ -90,6 +254,7 @@ impl<R: BufRead> Scanner<R> {
     /// Creates a new `Scanner` instance with the given reader.
     ///
     /// # Example
+    ///
     /// ``` no_run
     /// use {
     ///     algorist::io::Scanner,
@@ -425,6 +590,7 @@ pub fn wvln<W: Write, T: std::fmt::Display>(w: &mut W, v: &[T]) {
 }
 
 #[cfg(test)]
+#[cfg(feature = "unit_tests")]
 mod tests {
     use {super::*, crate::io::Scanner, std::io::BufReader};
 

@@ -22,38 +22,34 @@ Once installed, you can use it as `cargo algorist`.
 
 ## Usage
 
-When contesting, you will normally have a set of problems to solve, each of which is identified by a
-problem ID (usually a letter from `a` to `h`). Each problem will have its own source file, and while
-that file can use any number of additional modules, it is expected that the final submission is a
-single file that contains all the necessary code to solve the problem.
-
 The `algorist` CLI tool provides a way to create a new contest project, which is a normal Rust
 project, use additional modules with common algorithms and data structures, and then bundle each
-problem into a single output file that can be submitted to the contest system (only modules actually
-used will be bundled, not all available data structures and algorithms).
+problem into a single output file that can be submitted to the contest system.
 
 ### Create a new contest project
 
-To create a new contest project (`contest_id` will be normally contest number):
+To create a new contest project:
 
 ``` bash
 cargo algorist create <contest_id>
 
 # examples:
 cargo algorist create 4545
-cargo algorist create contests/4545 # sub-folders are also supported
+cargo algorist create contests/4545 # sub-folders are supported
 ```
 
-This will create Rust project with all the necessary problem files and algorithm modules copied into
-it. Problem files will be created in `src/bin` directory, and the library with algorithms and data
-structures will be created in `src/algorist/` module.
+This will create a Rust project with all the necessary problem files and algorithm modules copied
+into it.
+
+Problem files will be created in `src/bin` directory, and the library with algorithms and data
+structures will be created in `src/algorist` module.
 
 ``` bash
 # run problem A (`src/bin/a.rs`)
 # it expects input from stdin
 cargo run --bin a
 
-# it is a normal Rust project, so you can use all the usual commands
+# it is a normal Rust project, you can use all the usual commands
 cargo build
 cargo test
 ```
@@ -79,7 +75,9 @@ cargo algorist add a.rs     # same as above
 
 All problems are located in `src/bin/<problem_id>.rs` files. The file will contain entry point
 `main` function, which is expected to read input from standard input and write output to standard
-output. The starter code for the problem file will look something like this:
+output.
+
+The starter code for the problem file will look something like this:
 
 ``` rust, no_run
 use algorist::io::{test_cases, wln};
@@ -96,19 +94,17 @@ See the [`documentation`](https://docs.rs/algorist/latest/algorist/algorist/) on
 other provided algorithms and data structures) for more details on the default code provided in
 problem files.
 
-To test a problem, you can use (again, it is a normal Rust project, so you can use all the usual
-machinery):
+Normally, when working on solution, you copy the tests cases from the contest system into the
+clipboard (or file), and then need to see the output of your program:
 
 ``` bash
-cargo test --bin <problem_id>
-
 # alias pbpaste=’xsel — clipboard — output’ on Linux
 pbpaste | cargo run --bin <problem_id>   # gets input from clipboard
 cargo run --bin <problem_id> < input.txt # gets input from file
 ```
 
-Once you are happy with your solution, you can submit it to the contest system (by bundling into a
-single file).
+Once you are happy with the output, you can submit the solution back to the contest system (by
+bundling into a single file).
 
 ### Bundle the project
 
@@ -127,7 +123,6 @@ This will create a single output file in `bundled/<problem_id>.rs` file, which c
 the contest system.
 
 Only the modules actually used in the problem file will be included in the output file.
-
 
 ## Included algorithms and data structures
 

@@ -82,21 +82,12 @@ All problems are located in `src/bin/<problem_id>.rs` files. The file will conta
 output. The starter code for the problem file will look something like this:
 
 ``` rust, no_run
-use {
-    algorist::io::{Scanner, wln},
-    std::io::{self, Write},
-};
+use algorist::io::{test_cases, wln};
 
 fn main() {
-    let mut scan = Scanner::new(io::stdin().lock());
-    let mut w = io::BufWriter::new(io::stdout().lock());
-
-    scan.test_cases(&mut |scan| {
-        let n = scan.u();
-        let vals: Vec<i32> = scan.vec(n);
-
-        let ans = vals.len();
-        wln!(w, "{}", ans);
+    test_cases(&mut |scan, w| {
+        let (a, b) = scan.u2();
+        wln!(w, "{}", a + b);
     });
 }
 ```
@@ -122,10 +113,7 @@ single file).
 ### Bundle the project
 
 Contest systems expect a single output file, where all used modules are packed within the scope of
-that file.
-
-To bundle the problem which you are working on, and which might include various additional modules
-(at the very least `io` module is included), in a single output file, you can use:
+that file. At the very least `io` module is expected to be included in the output file.
 
 ``` bash
 cargo algorist bundle <problem_id>
@@ -138,9 +126,8 @@ cargo algorist bundle a.rs
 This will create a single output file in `bundled/<problem_id>.rs` file, which can be submitted to
 the contest system.
 
-Note that while the library provides a lot of algorithms and data structures, only those actually
-used in the problem will be included in the output file, so the final file will be as concise and
-readable as possible (it is NOT just a dump of everything).
+Only the modules actually used in the problem file will be included in the output file.
+
 
 ## Included algorithms and data structures
 

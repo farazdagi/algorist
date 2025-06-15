@@ -7,19 +7,7 @@ use {
         cmp::PartialOrd,
         fmt::{Debug, Display},
         marker::PhantomData,
-        ops::{
-            Add,
-            AddAssign,
-            BitAnd,
-            Div,
-            DivAssign,
-            Mul,
-            MulAssign,
-            Neg,
-            ShrAssign,
-            Sub,
-            SubAssign,
-        },
+        ops::*,
         str::FromStr,
     },
 };
@@ -240,7 +228,7 @@ pub use ma_impl as ma;
 #[cfg(test)]
 #[cfg(feature = "unit_tests")]
 mod tests {
-    use {super::*, crate::math::Value, std::i64};
+    use {super::*,  std::i64};
 
     #[test]
     fn modulo_creation() {

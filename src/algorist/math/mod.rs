@@ -5,7 +5,11 @@
 //!
 //! # Number theory
 //!
-//! For working with prime numbers, see the functions in [`primes`] module.
+//! For working with prime numbers, including number factorization, see the
+//! functions in [`primes`](module@primes) module.
+//!
+//! To compute the greatest common divisor (GCD) and least common multiple
+//! (LCM), rely on [`gcd`](module@gcd) module.
 
 pub mod gcd;
 pub mod log;
@@ -25,17 +29,43 @@ use {
 
 /// Wrapper for a value of type `T`.
 pub trait Value<T>: Copy + Clone + Eq + Ord + Default {
-    fn val() -> T;
+    /// Provides a way to access the value of type `T`.
+    fn val(&self) -> T;
+
+    /// Sets the value of type `T`, using a value of type `V`.
+    fn set_val<V: Number + AsPrimitive<usize>>(&mut self, val: V);
+
+    /// Creates a new instance of the type with the given value.
+    fn new(val: usize) -> Self {
+        let mut instance = Self::default();
+        instance.set_val(val);
+        instance
+    }
 }
+
+#[macro_export]
+macro_rules! as_value_impl {
+    ($($t: ident)+) => {$(
+        impl $crate::algorist::math::Value<$t> for $t {
+            fn val(&self) -> $t {
+                *self
+            }
+
+            fn set_val<V: $crate::algorist::math::Number + $crate::algorist::math::AsPrimitive<usize>>(&mut self, val: V) {
+                *self = val.as_primitive() as $t;
+            }
+        }
+    )+};
+}
+
+as_value_impl!(i8 i16 i32 i64 i128 isize u8 u16 u32 u64 u128 usize);
 
 /// Type has a constant value of type `T`.
-pub trait ConstValue<T>: Value<T> {
+pub trait ConstValue<T>: Copy + Clone + Eq + Ord + Default {
     const VAL: T;
-}
 
-impl<T, V: ConstValue<T>> Value<T> for V {
     fn val() -> T {
-        V::VAL
+        Self::VAL
     }
 }
 
@@ -140,6 +170,7 @@ pub trait Number:
     + Default
     + Debug
     + Display
+    + Value<Self>
     + Zero
     + One
     + Add<Output = Self>
@@ -155,9 +186,6 @@ pub trait Number:
     + PartialOrd
     + PartialEq
 {
-    fn new(n: usize) -> Self {
-        (0..n).fold(Self::zero(), |acc, _| acc + Self::one())
-    }
 }
 
 impl<T> Number for T where
@@ -167,6 +195,7 @@ impl<T> Number for T where
         + Default
         + Debug
         + Display
+        + Value<T>
         + Zero
         + One
         + Add<Output = Self>

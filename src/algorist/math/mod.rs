@@ -10,6 +10,8 @@
 //!
 //! To compute the greatest common divisor (GCD) and least common multiple
 //! (LCM), rely on [`gcd`](module@gcd) module.
+//!
+//! To compute integer roots, rely on [`root::IntRoot`] trait.
 
 pub mod gcd;
 pub mod log;
@@ -118,6 +120,70 @@ macro_rules! one_impl {
 
 one_impl!(i8 i16 i32 i64 i128 isize u8 u16 u32 u64 u128 usize);
 
+/// Type that can be raised to a power.
+pub trait Pow {
+    /// Raises self to the power of `exp`, using exponentiation by squaring.
+    fn pow(self, exp: u32) -> Self;
+}
+
+macro_rules! pow_impl {
+    ($($t: ident)+) => {$(
+        impl $crate::algorist::math::Pow for $t {
+            fn pow(self, exp: u32) -> $t {
+                <$t>::pow(self, exp)
+            }
+        }
+    )+};
+}
+
+pow_impl!(i8 i16 i32 i64 i128 isize u8 u16 u32 u64 u128 usize);
+
+/// Type that can be raised to a floating point power.
+pub trait Powf {
+    /// Raises a number to a floating point power.
+    fn powf(self, exp: Self) -> Self;
+}
+
+macro_rules! powf_impl {
+    ($($t: ident)+) => {$(
+        impl $crate::algorist::math::Powf for $t {
+            fn powf(self, exp: $t) -> $t {
+                <$t>::powf(self, exp)
+            }
+        }
+    )+};
+}
+
+powf_impl!(f32 f64);
+
+pub trait AsType<T> {
+    fn as_type(self) -> T;
+}
+
+macro_rules! impl_as_type {
+    ($from:ty => $($to:ty),*) => {
+        $(
+            impl $crate::algorist::math::AsType<$to> for $from {
+                fn as_type(self) -> $to {
+                    self as $to
+                }
+            }
+        )*
+    };
+}
+
+// Example usage:
+impl_as_type!(u8 => u16, u32, u64, usize, i16, i32, i64, isize, f32, f64);
+impl_as_type!(u16 => u16, u32, u64, usize, i16, i32, i64, isize, f32, f64);
+impl_as_type!(u32 => u16, u32, u64, usize, i16, i32, i64, isize, f32, f64);
+impl_as_type!(u64 => u16, u32, u64, usize, i16, i32, i64, isize, f32, f64);
+impl_as_type!(usize => u16, u32, u64, usize, i16, i32, i64, isize, f32, f64);
+impl_as_type!(i16 => u16, u32, u64, usize, i16, i32, i64, isize, f32, f64);
+impl_as_type!(i32 => u16, u32, u64, usize, i16, i32, i64, isize, f32, f64);
+impl_as_type!(i64 => u16, u32, u64, usize, i16, i32, i64, isize, f32, f64);
+impl_as_type!(isize => u16, u32, u64, usize, i16, i32, i64, isize, f32, f64);
+impl_as_type!(f64 => u16, u32, u64, usize, i16, i32, i64, isize, f32, f64);
+
 /// Trait for down-casting numeric types.
 ///
 /// Potential loss of precision may occur when down-casting from a wider type to
@@ -162,6 +228,27 @@ macro_rules! upcast_impl {
 
 upcast_impl!(i8 i16, i16 i32, i32 i64, i64 i128, u8 u16, u16 u32, u32 u64, u64 u128);
 
+/// Integer type.
+pub trait Integer: Number {
+    /// Checks if the integer is even.
+    fn is_even(self) -> bool {
+        self.val() % Self::new(2) == Self::zero()
+    }
+
+    /// Checks if the integer is odd.
+    fn is_odd(self) -> bool {
+        !self.is_even()
+    }
+}
+
+#[macro_export]
+macro_rules! integer_impl {
+    ($($t: ident)+) => {$(
+        impl $crate::algorist::math::Integer for $t {}
+    )+};
+}
+integer_impl!(i8 i16 i32 i64 i128 isize u8 u16 u32 u64 u128 usize);
+
 /// Numeric type.
 pub trait Number:
     Sized
@@ -173,6 +260,7 @@ pub trait Number:
     + Value<Self>
     + Zero
     + One
+    + Pow
     + Add<Output = Self>
     + AddAssign
     + Sub<Output = Self>
@@ -198,6 +286,7 @@ impl<T> Number for T where
         + Value<T>
         + Zero
         + One
+        + Pow
         + Add<Output = Self>
         + AddAssign
         + Sub<Output = Self>

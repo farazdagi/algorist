@@ -14,7 +14,6 @@
 //! To compute integer roots, rely on [`root::IntRoot`] trait.
 
 pub mod gcd;
-pub mod log;
 pub mod modulo;
 pub mod primes;
 pub mod root;

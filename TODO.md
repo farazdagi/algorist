@@ -9,12 +9,12 @@
 
 - [ ] Document existing algorithms and data structures.
   
-  - [ ] `math`
+  - [x] `math`
     - [x] `primes`
     - [x] `gcd`
-    - [ ] `root`
-    - [ ] `modulo`
-    - [ ] `log`
+    - [x] `root`
+    - [x] `modulo`
+    - [x] `log`
   - [ ] `ext`
   - [ ] `collections`
   - [ ] `misc`

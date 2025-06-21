@@ -1,3 +1,71 @@
+//! Modular arithmetic
+//!
+//! Sometimes, especially in competitive programming, we need to perform
+//! arithmetic operations under a modulo, for instance, the result is always
+//! `actual_result % 1_000_000_007` i.e. result is always `< 1_000_000_007`.
+//! This is useful for avoiding overflow when working with large numbers.
+//!
+//! # Mod7 (mod 1_000_000_007) arithmetic
+//!
+//! This module provides a [`Modulo`] type that represents numbers under a
+//! certain modulo, with number of operations defined on it. By default, the
+//! [`Mod7`] type is provided, which uses `1_000_000_007` as the modulo.
+//!
+//! ## Example
+//!
+//! ```
+//! use algorist::math::modulo::{Mod7, Modulo};
+//!
+//! assert_eq!(Mod7::new(1_000_000_006).val(), 1_000_000_006);
+//! assert_eq!(Mod7::new(1_000_000_007).val(), 0);
+//! assert_eq!(Mod7::new(i64::MAX).val(), 291_172_003);
+//!
+//! assert_eq!(Mod7::new(1) + Mod7::new(2), Mod7::new(3));
+//! assert_eq!(Mod7::new(1_000_000_006) + Mod7::new(1), Mod7::new(0));
+//! ```
+//!
+//! To make it easier to work with, you can use the `ma!` (as in *m*odular
+//! *a*rithmetic) macro to create a `Mod7` instance:
+//!
+//! ```
+//! use algorist::math::modulo::{Mod7, ma};
+//!
+//! assert_eq!(ma!(42), Mod7::new(42));
+//! assert_eq!(ma!(1_000_000_006).val(), 1_000_000_006);
+//! assert_eq!(ma!(1_000_000_007).val(), 0);
+//! assert_eq!(ma!(i64::MAX).val(), 291_172_003);
+//!
+//! assert_eq!(ma!(1) + ma!(2), ma!(3));
+//! assert_eq!(ma!(1_000_000_006) + ma!(1), ma!(0));
+//! ```
+//!
+//! # Custom modulo types
+//!
+//! You can define your own modulo types using the `modulo!` macro, which takes
+//! the name of the type, the name of the constant value, the type of the
+//! constant value, and the value of the constant.
+//!
+//! ## Example
+//!
+//! ```
+//! use algorist::math::modulo::{modulo, modulo_alias, Modulo};
+//!
+//! modulo!(Mod13, Val13: i64 = 13);
+//!
+//! assert_eq!(Mod13::new(12).val(), 12);
+//! assert_eq!(Mod13::new(13).val(), 0);
+//! assert_eq!(Mod13::new(i64::MAX).val(), 7);
+//!
+//! assert_eq!(Mod13::new(1) + Mod13::new(2), Mod13::new(3));
+//! assert_eq!(Mod13::new(12) + Mod13::new(1), Mod13::new(0));
+//! assert_eq!(Mod13::new(12) - Mod13::new(1), Mod13::new(11));
+//! assert_eq!(Mod13::new(12) * Mod13::new(2), Mod13::new(11));
+//!
+//! modulo_alias!(Mod13, ma);
+//! assert_eq!(ma!(12) + ma!(2), ma!(1));
+//! assert_eq!(ma!(12) * ma!(2), ma!(11));
+//! ```
+
 use {
     crate::{
         ext::slice::sum::{MaxSum, max_sum_from_iter},
@@ -12,6 +80,22 @@ use {
     },
 };
 
+/// A type representing numbers under a modulo `M`.
+///
+/// This type is generic over the number type `T` and a constant value type `M`
+///
+/// # Example
+///
+/// ```
+/// use algorist::math::modulo::{Modulo};
+/// use algorist::math::value;
+///
+/// value!(Val7: i64 = 1_000_000_007);
+/// pub type Mod7 = Modulo<i64, Val7>;
+///
+/// assert_eq!(Mod7::new(1_000_000_006).val(), 1_000_000_006);
+/// assert_eq!(Mod7::new(1_000_000_007).val(), 0);
+/// ```
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Default)]
 pub struct Modulo<T, M: ConstValue<T>> {
     val: T,
@@ -19,6 +103,27 @@ pub struct Modulo<T, M: ConstValue<T>> {
 }
 
 impl<T: Number, M: ConstValue<T>> Modulo<T, M> {
+    /// Creates a new `Modulo` instance without checking the value.
+    ///
+    /// # Panics
+    ///
+    /// If the value is not in the range `[0, M::val())`, it will panic.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use algorist::math::modulo::Mod7;
+    ///
+    /// assert_eq!(Mod7::new_unchecked(1_000_000_006).val(), 1_000_000_006);
+    /// ```
+    ///
+    /// The following will panic:
+    ///
+    /// ``` should_panic
+    /// use algorist::math::modulo::Mod7;
+    ///
+    /// Mod7::new_unchecked(1_000_000_007);
+    /// ```
     pub fn new_unchecked(val: T) -> Self {
         assert!(
             val >= T::zero() && val < M::val(),
@@ -30,6 +135,16 @@ impl<T: Number, M: ConstValue<T>> Modulo<T, M> {
         }
     }
 
+    /// Creates a new `Modulo` instance, checking the value.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use algorist::math::modulo::Mod7;
+    ///
+    /// assert_eq!(Mod7::new(1_000_000_006).val(), 1_000_000_006);
+    /// assert_eq!(Mod7::new(1_000_000_007).val(), 0);
+    /// ```
     pub fn new(mut val: T) -> Self {
         if val < T::zero() {
             val += M::val();
@@ -46,6 +161,16 @@ impl<T: Number, M: ConstValue<T>> Modulo<T, M> {
         Self::new_unchecked(val)
     }
 
+    /// Returns the raw value of the modulo.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use algorist::math::modulo::Mod7;
+    ///
+    /// assert_eq!(Mod7::new(1_000_000_006).val(), 1_000_000_006);
+    /// assert_eq!(Mod7::new(1_000_000_007).val(), 0);
+    /// ```
     pub fn val(&self) -> T {
         self.val
     }
@@ -57,6 +182,16 @@ where
     T::Source: Number,
     M: ConstValue<T>,
 {
+    /// Raises the modulo number to the power of `exp`.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use algorist::math::modulo::Mod7;
+    ///
+    /// assert_eq!(Mod7::new(2).pow(3).val(), 8);
+    /// assert_eq!(Mod7::new(2).pow(1_000_000_006).val(), 1);
+    /// ```
     #[must_use]
     pub fn pow(self, mut exp: T) -> Self {
         let mut result = Self::new(T::one());
@@ -214,16 +349,32 @@ impl<T: Number, M: ConstValue<T>> Neg for Modulo<T, M> {
     }
 }
 
-super::value!(Val7: i64 = 1_000_000_007);
-pub type Mod7 = Modulo<i64, Val7>;
-
 #[macro_export]
-macro_rules! ma_impl {
-    ($val:expr) => {
-        Mod7::new($val)
+macro_rules! modulo_alias_impl {
+    ($name:ident, $macro_name:ident) => {
+        #[allow(non_local_definitions)]
+        #[macro_export]
+        macro_rules! $macro_name {
+            ($val: expr) => {
+                $name::new($val)
+            };
+        }
+        pub use $macro_name;
     };
 }
-pub use ma_impl as ma;
+pub use modulo_alias_impl as modulo_alias;
+
+#[macro_export]
+macro_rules! modulo_impl {
+    ($name:ident, $vname:ident : $t:ty = $val:expr) => {
+        $crate::algorist::math::value!($vname: $t = $val);
+        pub type $name = $crate::algorist::math::modulo::Modulo<$t, $vname>;
+    };
+}
+pub use modulo_impl as modulo;
+
+modulo!(Mod7, Val7: i64 = 1_000_000_007);
+modulo_alias_impl!(Mod7, ma);
 
 #[cfg(test)]
 #[cfg(feature = "unit_tests")]
@@ -499,5 +650,22 @@ mod tests {
             let m = arr.max_sum();
             assert_eq!(m.val, expected, "max_sum()");
         }
+    }
+
+    #[test]
+    fn custom_modulo() {
+        modulo!(Mod13, Val13: i64 = 13);
+
+        assert_eq!(Mod13::new(12).val(), 12);
+        assert_eq!(Mod13::new(13).val(), 0);
+        assert_eq!(Mod13::new(i64::MAX).val(), 7);
+
+        assert_eq!(Mod13::new(1) + Mod13::new(2), Mod13::new(3));
+        assert_eq!(Mod13::new(12) + Mod13::new(1), Mod13::new(0));
+        assert_eq!(Mod13::new(12) - Mod13::new(1), Mod13::new(11));
+        assert_eq!(Mod13::new(12) * Mod13::new(2), Mod13::new(11));
+
+        modulo_alias!(Mod13, ma13);
+        assert_eq!(ma13!(12) * ma13!(2), ma13!(11));
     }
 }

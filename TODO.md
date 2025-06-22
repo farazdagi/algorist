@@ -16,7 +16,7 @@
     - [x] `modulo`
     - [x] `log`
   - [ ] `ext`
-  - [ ] `collections`
+  - [x] `collections`
   - [ ] `misc`
 
 - [ ] Provide `examples`, with a CodeForces contest as an example.

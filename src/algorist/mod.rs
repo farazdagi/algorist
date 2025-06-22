@@ -2,8 +2,6 @@
 
 pub mod io;
 pub mod math;
-
-/// Collections.
 pub mod collections;
 
 /// Various extensions to the standard library.

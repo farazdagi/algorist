@@ -31,15 +31,15 @@ use {
 /// Wrapper for a value of type `T`.
 pub trait Value<T>: Copy + Clone + Eq + Ord + Default {
     /// Provides a way to access the value of type `T`.
-    fn val(&self) -> T;
+    fn value(&self) -> T;
 
     /// Sets the value of type `T`, using a value of type `V`.
-    fn set_val<V: Number + AsPrimitive<usize>>(&mut self, val: V);
+    fn set_value<V: Number + AsPrimitive<usize>>(&mut self, val: V);
 
     /// Creates a new instance of the type with the given value.
     fn new(val: usize) -> Self {
         let mut instance = Self::default();
-        instance.set_val(val);
+        instance.set_value(val);
         instance
     }
 }
@@ -48,11 +48,11 @@ pub trait Value<T>: Copy + Clone + Eq + Ord + Default {
 macro_rules! as_value_impl {
     ($($t: ident)+) => {$(
         impl $crate::algorist::math::Value<$t> for $t {
-            fn val(&self) -> $t {
+            fn value(&self) -> $t {
                 *self
             }
 
-            fn set_val<V: $crate::algorist::math::Number + $crate::algorist::math::AsPrimitive<usize>>(&mut self, val: V) {
+            fn set_value<V: $crate::algorist::math::Number + $crate::algorist::math::AsPrimitive<usize>>(&mut self, val: V) {
                 *self = val.as_primitive() as $t;
             }
         }
@@ -63,10 +63,10 @@ as_value_impl!(i8 i16 i32 i64 i128 isize u8 u16 u32 u64 u128 usize);
 
 /// Type has a constant value of type `T`.
 pub trait ConstValue<T>: Copy + Clone + Eq + Ord + Default {
-    const VAL: T;
+    const VALUE: T;
 
-    fn val() -> T {
-        Self::VAL
+    fn value() -> T {
+        Self::VALUE
     }
 }
 
@@ -77,7 +77,7 @@ macro_rules! value_impl {
         pub struct $name {}
 
         impl $crate::algorist::math::ConstValue<$t> for $name {
-            const VAL: $t = $val;
+            const VALUE: $t = $val;
         }
     };
 }
@@ -231,7 +231,7 @@ upcast_impl!(i8 i16, i16 i32, i32 i64, i64 i128, u8 u16, u16 u32, u32 u64, u64 u
 pub trait Integer: Number {
     /// Checks if the integer is even.
     fn is_even(self) -> bool {
-        self.val() % Self::new(2) == Self::zero()
+        self.value() % Self::new(2) == Self::zero()
     }
 
     /// Checks if the integer is odd.

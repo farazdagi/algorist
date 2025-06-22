@@ -126,7 +126,7 @@ impl<T: Number, M: ConstValue<T>> Modulo<T, M> {
     /// ```
     pub fn new_unchecked(val: T) -> Self {
         assert!(
-            val >= T::zero() && val < M::val(),
+            val >= T::zero() && val < M::value(),
             "Invalid modulo value: {val}"
         );
         Self {
@@ -147,15 +147,15 @@ impl<T: Number, M: ConstValue<T>> Modulo<T, M> {
     /// ```
     pub fn new(mut val: T) -> Self {
         if val < T::zero() {
-            val += M::val();
+            val += M::value();
             if val < T::zero() {
-                val %= M::val();
+                val %= M::value();
                 return Self::new(val);
             }
-        } else if val >= M::val() {
-            val -= M::val();
-            if val >= M::val() {
-                val %= M::val();
+        } else if val >= M::value() {
+            val -= M::value();
+            if val >= M::value() {
+                val %= M::value();
             }
         }
         Self::new_unchecked(val)
@@ -250,9 +250,9 @@ where
     type Output = Self;
 
     fn inverse(&self) -> Option<Self> {
-        let (d, x, _) = gcd_extended(self.val, M::val());
+        let (d, x, _) = gcd_extended(self.val, M::value());
         if d == T::one() {
-            Some(Self::new(T::downcast(x % M::val().into())))
+            Some(Self::new(T::downcast(x % M::value().into())))
         } else {
             None
         }
@@ -297,7 +297,7 @@ where
 
     fn mul(self, rhs: Self) -> Self {
         Self::new(T::downcast(
-            T::Source::from(self.val) * T::Source::from(rhs.val) % T::Source::from(M::val()),
+            T::Source::from(self.val) * T::Source::from(rhs.val) % T::Source::from(M::value()),
         ))
     }
 }
@@ -310,7 +310,7 @@ where
 {
     fn mul_assign(&mut self, rhs: Self) {
         *self = Self::new(T::downcast(
-            T::Source::from(self.val) * T::Source::from(rhs.val) % T::Source::from(M::val()),
+            T::Source::from(self.val) * T::Source::from(rhs.val) % T::Source::from(M::value()),
         ));
     }
 }
@@ -345,7 +345,7 @@ impl<T: Number, M: ConstValue<T>> Neg for Modulo<T, M> {
     type Output = Self;
 
     fn neg(self) -> Self {
-        Self::new(M::val() - self.val)
+        Self::new(M::value() - self.val)
     }
 }
 
@@ -391,7 +391,7 @@ mod tests {
             (0, 0),
             (1_000_000_006, 1_000_000_006),
             (1_000_000_007, 0),
-            (i64::MAX, i64::MAX % Val7::val()),
+            (i64::MAX, i64::MAX % Val7::value()),
         ];
 
         for &(val, expected) in test_cases.iter() {
@@ -414,10 +414,10 @@ mod tests {
             (1_000_000_006, 1_000_000_007, 1_000_000_006),
             (1_000_000_007, 1_000_000_007, 0),
             (1_000_000_007, 1_000_000_008, 1),
-            (i64::MAX, 1, i64::MAX % Val7::val() + 1),
-            (i64::MAX, 1_000_000_007, i64::MAX % Val7::val()),
-            (i64::MAX, 1_000_000_008, i64::MAX % Val7::val() + 1),
-            (i64::MAX, i64::MAX, i64::MAX % Val7::val() * 2 % Val7::val()),
+            (i64::MAX, 1, i64::MAX % Val7::value() + 1),
+            (i64::MAX, 1_000_000_007, i64::MAX % Val7::value()),
+            (i64::MAX, 1_000_000_008, i64::MAX % Val7::value() + 1),
+            (i64::MAX, i64::MAX, i64::MAX % Val7::value() * 2 % Val7::value()),
             (-1, 1, 0),
             (-1, -1, 1_000_000_005),
             (-1, -2, 1_000_000_004),
@@ -450,9 +450,9 @@ mod tests {
             (1_000_000_006, 1_000_000_007, 1_000_000_006),
             (1_000_000_007, 1_000_000_007, 0),
             (1_000_000_007, 1_000_000_008, 1_000_000_006),
-            (i64::MAX, 1, i64::MAX % Val7::val() - 1),
-            (i64::MAX, 1_000_000_007, i64::MAX % Val7::val()),
-            (i64::MAX, 1_000_000_008, i64::MAX % Val7::val() - 1),
+            (i64::MAX, 1, i64::MAX % Val7::value() - 1),
+            (i64::MAX, 1_000_000_007, i64::MAX % Val7::value()),
+            (i64::MAX, 1_000_000_008, i64::MAX % Val7::value() - 1),
             (i64::MAX, i64::MAX, 0),
             (-1, 1, 1_000_000_005),
             (-1, -1, 0),
@@ -487,7 +487,7 @@ mod tests {
             (1_000_000_006, 1_000_000_007, 0),
             (1_000_000_007, 1_000_000_007, 0),
             (1_000_000_007, 1_000_000_008, 0),
-            (i64::MAX, 1, i64::MAX % Val7::val()),
+            (i64::MAX, 1, i64::MAX % Val7::value()),
             (i64::MAX, 1_000_000_007, 0),
             (i64::MAX, 1_000_000_008, 291_172_003),
             (i64::MAX, i64::MAX, 737_564_071),
@@ -627,7 +627,7 @@ mod tests {
             ("1000000008".to_string(), 1),
             ("1000000009".to_string(), 2),
             ("1000000010".to_string(), 3),
-            (format!("{}", i64::MAX), i64::MAX % Val7::val()),
+            (format!("{}", i64::MAX), i64::MAX % Val7::value()),
         ];
 
         for (s, expected) in test_cases {

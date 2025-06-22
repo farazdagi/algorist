@@ -367,8 +367,8 @@ pub use modulo_alias_impl as modulo_alias;
 #[macro_export]
 macro_rules! modulo_impl {
     ($name:ident, $vname:ident : $t:ty = $val:expr) => {
-        $crate::algorist::math::value!($vname: $t = $val);
-        pub type $name = $crate::algorist::math::modulo::Modulo<$t, $vname>;
+        $crate::math::value!($vname: $t = $val);
+        pub type $name = $crate::math::modulo::Modulo<$t, $vname>;
     };
 }
 pub use modulo_impl as modulo;
@@ -377,7 +377,6 @@ modulo!(Mod7, Val7: i64 = 1_000_000_007);
 modulo_alias_impl!(Mod7, ma);
 
 #[cfg(test)]
-#[cfg(feature = "unit_tests")]
 mod tests {
     use {super::*, std::i64};
 
@@ -417,7 +416,11 @@ mod tests {
             (i64::MAX, 1, i64::MAX % Val7::value() + 1),
             (i64::MAX, 1_000_000_007, i64::MAX % Val7::value()),
             (i64::MAX, 1_000_000_008, i64::MAX % Val7::value() + 1),
-            (i64::MAX, i64::MAX, i64::MAX % Val7::value() * 2 % Val7::value()),
+            (
+                i64::MAX,
+                i64::MAX,
+                i64::MAX % Val7::value() * 2 % Val7::value(),
+            ),
             (-1, 1, 0),
             (-1, -1, 1_000_000_005),
             (-1, -2, 1_000_000_004),

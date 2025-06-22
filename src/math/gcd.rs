@@ -83,7 +83,6 @@ pub fn lcm<T: Number>(a: T, b: T) -> T {
 }
 
 #[cfg(test)]
-#[cfg(feature = "unit_tests")]
 mod tests {
     use super::*;
 

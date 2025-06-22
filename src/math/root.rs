@@ -181,7 +181,7 @@ where
 #[macro_export]
 macro_rules! impl_int_root_unsigned {
     ($($t: ident)+) => {$(
-        impl $crate::algorist::math::root::IntRoot for $t {
+        impl $crate::math::root::IntRoot for $t {
             fn root_floor(&self, k: usize) -> Self {
                 let n = *self;
                 let mut x = ((n as f64).powf(1.0 / k as f64).floor()) as $t;
@@ -197,7 +197,7 @@ macro_rules! impl_int_root_unsigned {
 #[macro_export]
 macro_rules! impl_int_root_signed {
     ($($t: ident $u: ident),+) => {$(
-        impl $crate::algorist::math::root::IntRoot for $t {
+        impl $crate::math::root::IntRoot for $t {
             fn root_floor(&self, k: usize) -> Self {
                 assert!(k >= 1);
                 let n = *self;
@@ -216,7 +216,6 @@ impl_int_root_unsigned!(u16 u32 u64 usize);
 impl_int_root_signed!(i16 u16, i32 u32, i64 u64, isize usize);
 
 #[cfg(test)]
-#[cfg(feature = "unit_tests")]
 mod tests {
     use super::*;
 

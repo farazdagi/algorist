@@ -590,7 +590,6 @@ pub fn wvln<W: Write, T: std::fmt::Display>(w: &mut W, v: &[T]) {
 }
 
 #[cfg(test)]
-#[cfg(feature = "unit_tests")]
 mod tests {
     use {super::*, crate::io::Scanner, std::io::BufReader};
 

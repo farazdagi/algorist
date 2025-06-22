@@ -19,7 +19,6 @@ impl<T> Rotated for Vec<T> {
 }
 
 #[cfg(test)]
-#[cfg(feature = "unit_tests")]
 mod tests {
     use super::*;
 

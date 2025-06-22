@@ -771,7 +771,6 @@ pub enum AdjacentCells {
 }
 
 #[cfg(test)]
-#[cfg(feature = "unit_tests")]
 mod tests {
     use {super::*, std::io};
 

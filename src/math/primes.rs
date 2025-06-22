@@ -642,7 +642,7 @@ impl<T: Number + AsPrimitive<usize>> Factors for T {}
 ///
 /// # Example
 /// ```
-/// use crate::algorist::{ext::vec::sorted::Sorted, math::primes::factors};
+/// use algorist::{ext::vec::sorted::Sorted, math::primes::factors};
 ///
 /// assert_eq!(factors(1), vec![1]);
 /// assert_eq!(
@@ -686,7 +686,6 @@ fn generate_combinations(factor_powers: &Vec<Vec<usize>>, i: usize, product: usi
 }
 
 #[cfg(test)]
-#[cfg(feature = "unit_tests")]
 mod tests {
     use {super::*, crate::ext::vec::sorted::Sorted};
 

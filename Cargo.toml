@@ -1,38 +1,15 @@
 [package]
 name = "algorist"
-version = "0.8.0"
+version = "0.9.0"
 edition = "2024"
 license = "MIT"
 authors = ["Victor Farazdagi <farazdagi@gmail.com>"]
-description = "Helper tools, algorithms and data structures for competitive programming"
+description = "Algorithms and data structures for competitive programming"
 homepage = "https://github.com/farazdagi/algorist"
 repository = "https://github.com/farazdagi/algorist"
 documentation = "https://docs.rs/algorist"
 readme = "README.md"
 keywords = ["algorithms", "data-structures", "codeforces"]
 categories = ["algorithms", "data-structures"]
-default-run = "cargo-algorist"
-exclude = ["src/bin/problem.rs"]
-
-[features]
-unit_tests = []
-default = ["unit_tests"]
-
-[[bin]]
-name = "cargo-algorist"
-path = "src/main.rs"
 
 [dependencies]
-argh = "0.1.13"
-anyhow = "1.0"
-include_dir = { version = "0.7", features = ["glob"] }
-syn = { version = "2", features = [
-  "full",
-  "visit",
-  "visit-mut",
-  "extra-traits",
-] }
-quote = "1"
-proc-macro2 = "1.0"
-prettyplease = "0.2"
-tap = "1.0"

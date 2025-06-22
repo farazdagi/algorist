@@ -47,12 +47,12 @@ pub trait Value<T>: Copy + Clone + Eq + Ord + Default {
 #[macro_export]
 macro_rules! as_value_impl {
     ($($t: ident)+) => {$(
-        impl $crate::algorist::math::Value<$t> for $t {
+        impl $crate::math::Value<$t> for $t {
             fn value(&self) -> $t {
                 *self
             }
 
-            fn set_value<V: $crate::algorist::math::Number + $crate::algorist::math::AsPrimitive<usize>>(&mut self, val: V) {
+            fn set_value<V: $crate::math::Number + $crate::math::AsPrimitive<usize>>(&mut self, val: V) {
                 *self = val.as_primitive() as $t;
             }
         }
@@ -76,7 +76,7 @@ macro_rules! value_impl {
         #[derive(Copy, Clone, Eq, PartialEq, Hash, Ord, PartialOrd, Default)]
         pub struct $name {}
 
-        impl $crate::algorist::math::ConstValue<$t> for $name {
+        impl $crate::math::ConstValue<$t> for $name {
             const VALUE: $t = $val;
         }
     };
@@ -96,7 +96,7 @@ pub trait One {
 #[macro_export]
 macro_rules! zero_impl {
     ($($t: ident)+) => {$(
-        impl $crate::algorist::math::Zero for $t {
+        impl $crate::math::Zero for $t {
             fn zero() -> Self {
                 0
             }
@@ -109,7 +109,7 @@ zero_impl!(i8 i16 i32 i64 i128 isize u8 u16 u32 u64 u128 usize);
 #[macro_export]
 macro_rules! one_impl {
     ($($t: ident)+) => {$(
-        impl $crate::algorist::math::One for $t {
+        impl $crate::math::One for $t {
             fn one() -> Self {
                 1
             }
@@ -127,7 +127,7 @@ pub trait Pow {
 
 macro_rules! pow_impl {
     ($($t: ident)+) => {$(
-        impl $crate::algorist::math::Pow for $t {
+        impl $crate::math::Pow for $t {
             fn pow(self, exp: u32) -> $t {
                 <$t>::pow(self, exp)
             }
@@ -145,7 +145,7 @@ pub trait Powf {
 
 macro_rules! powf_impl {
     ($($t: ident)+) => {$(
-        impl $crate::algorist::math::Powf for $t {
+        impl $crate::math::Powf for $t {
             fn powf(self, exp: $t) -> $t {
                 <$t>::powf(self, exp)
             }
@@ -162,7 +162,7 @@ pub trait AsType<T> {
 macro_rules! impl_as_type {
     ($from:ty => $($to:ty),*) => {
         $(
-            impl $crate::algorist::math::AsType<$to> for $from {
+            impl $crate::math::AsType<$to> for $from {
                 fn as_type(self) -> $to {
                     self as $to
                 }
@@ -196,7 +196,7 @@ pub trait Downcast: Sized {
 #[macro_export]
 macro_rules! downcast_impl {
     ($($t: ident $w: ident),+) => {$(
-        impl $crate::algorist::math::Downcast for $t {
+        impl $crate::math::Downcast for $t {
             type Source = $w;
             fn downcast(src: Self::Source) -> Self {
                 src as $t
@@ -216,7 +216,7 @@ pub trait Upcast: Sized {
 #[macro_export]
 macro_rules! upcast_impl {
     ($($t: ident $w: ident),+) => {$(
-        impl $crate::algorist::math::Upcast for $t {
+        impl $crate::math::Upcast for $t {
             type Target = $w;
             fn upcast(self) -> Self::Target {
                 $w::from(self)
@@ -243,7 +243,7 @@ pub trait Integer: Number {
 #[macro_export]
 macro_rules! integer_impl {
     ($($t: ident)+) => {$(
-        impl $crate::algorist::math::Integer for $t {}
+        impl $crate::math::Integer for $t {}
     )+};
 }
 integer_impl!(i8 i16 i32 i64 i128 isize u8 u16 u32 u64 u128 usize);
@@ -316,7 +316,7 @@ pub trait AsPrimitive<T> {
 #[macro_export]
 macro_rules! as_primitive_impl {
     ($($t: ident)+) => {$(
-        impl $crate::algorist::math::AsPrimitive<$t> for $t {
+        impl $crate::math::AsPrimitive<$t> for $t {
             fn as_primitive(&self) -> $t {
                 *self
             }
@@ -329,7 +329,7 @@ as_primitive_impl!(i8 i16 i32 i64 i128 isize u8 u16 u32 u64 u128 usize);
 #[macro_export]
 macro_rules! as_primitive_unsigned_impl {
     ($($t: ident)+) => {$(
-        impl $crate::algorist::math::AsPrimitive<usize> for $t {
+        impl $crate::math::AsPrimitive<usize> for $t {
             fn as_primitive(&self) -> usize {
                 *self as usize
             }

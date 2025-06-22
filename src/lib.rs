@@ -1,6 +1,11 @@
-#![doc = include_str!("../README.md")]
-#![allow(clippy::needless_doctest_main)]
+#![doc = include_str!("./README.md")]
 
-pub mod algorist;
+pub mod collections;
+pub mod io;
+pub mod math;
 
-pub use algorist::*;
+/// Various extensions to the standard library.
+pub mod ext;
+
+/// Miscellaneous utilities.
+pub mod misc;

@@ -43,14 +43,14 @@ mod tests {
 
     #[test]
     fn test_fold_while() {
+        use FoldWhile::{Break, Continue};
         let v = vec![1, 2, 3, 4, 5];
-        let res = v.into_iter().fold_while(0, |acc, x| {
-            if x < 5 {
-                FoldWhile::Continue(acc + x)
-            } else {
-                FoldWhile::Break(acc)
-            }
-        });
+        let res = v.into_iter().fold_while(
+            0,
+            |acc, x| {
+                if x < 5 { Continue(acc + x) } else { Break(acc) }
+            },
+        );
         assert_eq!(res.into_inner(), 10);
     }
 }

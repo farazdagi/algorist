@@ -1,4 +1,3 @@
-
 If you need to work with an iterator of items, one chunk of a given size at a time, you can use the
 [`Chunks`](crate::ext::iter::chunks::Chunks) iterator.
 

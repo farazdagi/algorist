@@ -1,3 +1,5 @@
+use std::ops::{Deref, DerefMut};
+
 /// Result type for a fold operation that can be short-circuited.
 ///
 /// This enum is used to represent the result of a fold operation that can be
@@ -6,9 +8,28 @@
 /// It is particularly useful in with iterators where you want to accumulate a
 /// value until a certain condition is met, at which point you can stop the
 /// accumulation and return the accumulated value.
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub enum FoldWhile<T> {
     Continue(T),
     Break(T),
+}
+
+impl<T> Deref for FoldWhile<T> {
+    type Target = T;
+
+    fn deref(&self) -> &Self::Target {
+        match self {
+            Self::Continue(t) | Self::Break(t) => t,
+        }
+    }
+}
+
+impl<T> DerefMut for FoldWhile<T> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        match self {
+            Self::Continue(t) | Self::Break(t) => t,
+        }
+    }
 }
 
 impl<T> FoldWhile<T> {
@@ -39,6 +60,8 @@ impl<T> FoldWhile<T> {
 ///         FoldWhile::Break(acc)
 ///     }
 /// });
+///
+/// assert_eq!(*res, 10);
 /// assert_eq!(res.into_inner(), 10);
 /// ```
 pub trait FoldWhileExt {
@@ -59,10 +82,10 @@ impl<I: Iterator> FoldWhileExt for I {
         for x in self.by_ref() {
             match f(init, &x) {
                 FoldWhile::Continue(new_init) => init = new_init,
-                FoldWhile::Break(new_init) => return FoldWhile::Break(new_init),
+                FoldWhile::Break(res) => return FoldWhile::Break(res),
             }
         }
-        FoldWhile::Continue(init)
+        FoldWhile::Break(init)
     }
 }
 
@@ -81,6 +104,6 @@ mod tests {
                 Break(acc)
             }
         });
-        assert_eq!(res.into_inner(), 10);
+        assert_eq!(*res, 10);
     }
 }

@@ -1,25 +1,31 @@
-use std::ops::ControlFlow;
-
 /// Extension trait for objects (iterators, vectors, slices) to get a sliding
 /// window of size 2.
+///
+/// This trait provides the `sliding_window` method, which returns an iterator
+/// that yields pairs of consecutive items from the original iterator, vector,
+/// or slice.
+///
+/// # Example
+///
+/// ```
+/// use algorist::ext::iter::window::SlidingWindowExt;
+///
+/// let eq_neighbors = vec![1, 2, 2, 3, 4, 4, 5]
+///     .sliding_window()
+///     .filter(|&(a, b)| a == b)
+///     .count();
+/// assert_eq!(eq_neighbors, 2);
+///
+/// // You can also use it with iterators:
+/// let v = vec![1, 2, 2, 3, 4, 4, 5, 5];
+/// let eq_neighbors = v.iter().sliding_window().filter(|&(a, b)| a == b).count();
+/// assert_eq!(eq_neighbors, 3);
+/// ```
 pub trait SlidingWindowExt {
     type Item: Copy;
     type Iter: Iterator<Item = Self::Item>;
 
     fn sliding_window(self) -> SlidingWindow<Self::Iter>;
-
-    fn sliding_window_try_fold<B, F>(self, init: B, mut f: F) -> B
-    where
-        Self: Sized,
-        F: FnMut(B, Self::Item, Self::Item) -> ControlFlow<B, B>,
-    {
-        match self
-            .sliding_window()
-            .try_fold(init, move |acc, (a, b)| f(acc, a, b))
-        {
-            ControlFlow::Continue(acc) | ControlFlow::Break(acc) => acc,
-        }
-    }
 }
 
 impl<'a, T> SlidingWindowExt for std::slice::Iter<'a, T> {
@@ -185,38 +191,10 @@ mod tests {
 
     #[test]
     fn test_iter_window_try_fold() {
-        let v: Vec<i32> = vec![];
-        let reps = v.sliding_window_try_fold(1, |acc, a, b| {
-            if a == b {
-                ControlFlow::Continue(acc + 1)
-            } else {
-                ControlFlow::Break(acc)
-            }
-        });
-        assert_eq!(reps, 1);
-
-        let v: Vec<i32> = vec![12];
-        let reps = v.sliding_window_try_fold(1, |acc, a, b| {
-            if a == b {
-                ControlFlow::Continue(acc + 1)
-            } else {
-                ControlFlow::Break(acc)
-            }
-        });
-        assert_eq!(reps, 1);
-
-        let v = vec![1, 1, 2, 3, 4, 5];
-        let reps = v.sliding_window_try_fold(1, |acc, a, b| {
-            if a == b {
-                ControlFlow::Continue(acc + 1)
-            } else {
-                ControlFlow::Break(acc)
-            }
-        });
-        assert_eq!(reps, 2);
+        use {crate::ext::iter::fold_while::FoldWhileExt, std::ops::ControlFlow};
 
         let s = "aaabcc";
-        let reps = s.chars().sliding_window_try_fold(1, |acc, a, b| {
+        let reps = s.chars().sliding_window().fold_while(1, |acc, &(a, b)| {
             if a == b {
                 ControlFlow::Continue(acc + 1)
             } else {
@@ -224,5 +202,14 @@ mod tests {
             }
         });
         assert_eq!(reps, 3);
+
+        let reps = s.chars().sliding_window().try_fold(1, |acc, (a, b)| {
+            if a == b {
+                ControlFlow::Continue(acc + 1)
+            } else {
+                ControlFlow::Break(acc)
+            }
+        });
+        assert_eq!(reps.break_value(), Some(3));
     }
 }

@@ -1,30 +1,32 @@
 /// Extension trait for objects (iterators, vectors, slices) to get a sliding
 /// window of size 2.
 ///
-/// This trait provides the `sliding_window` method, which returns an iterator
-/// that yields pairs of consecutive items from the original iterator, vector,
-/// or slice.
-///
-/// # Example
-///
-/// ```
-/// use algorist::ext::iter::window::SlidingWindowExt;
-///
-/// let eq_neighbors = vec![1, 2, 2, 3, 4, 4, 5]
-///     .sliding_window()
-///     .filter(|&(a, b)| a == b)
-///     .count();
-/// assert_eq!(eq_neighbors, 2);
-///
-/// // You can also use it with iterators:
-/// let v = vec![1, 2, 2, 3, 4, 4, 5, 5];
-/// let eq_neighbors = v.iter().sliding_window().filter(|&(a, b)| a == b).count();
-/// assert_eq!(eq_neighbors, 3);
-/// ```
+/// This trait provides the [`sliding_window`](Self::sliding_window) method,
+/// which returns an iterator that yields pairs of consecutive items from the
+/// original iterator, vector, or slice.
 pub trait SlidingWindowExt {
     type Item: Copy;
     type Iter: Iterator<Item = Self::Item>;
 
+    /// Returns an iterator that yields pairs of consecutive items from the
+    /// original iterator, vector, or slice.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use algorist::ext::iter::window::SlidingWindowExt;
+    ///
+    /// let eq_neighbors = vec![1, 2, 2, 3, 4, 4, 5]
+    ///     .sliding_window()
+    ///     .filter(|&(a, b)| a == b)
+    ///     .count();
+    /// assert_eq!(eq_neighbors, 2);
+    ///
+    /// // You can also use it with iterators:
+    /// let v = vec![1, 2, 2, 3, 4, 4, 5, 5];
+    /// let eq_neighbors = v.iter().sliding_window().filter(|&(a, b)| a == b).count();
+    /// assert_eq!(eq_neighbors, 3);
+    /// ```
     fn sliding_window(self) -> SlidingWindow<Self::Iter>;
 }
 

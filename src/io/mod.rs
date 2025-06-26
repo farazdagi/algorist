@@ -22,10 +22,12 @@
 //! ``` no_run
 //! use algorist::io::{test_case, wln};
 //!
-//! test_case(&mut |scan, w| {
-//!     let (a, b): (i32, i32) = scan.pair();
-//!     wln!(w, "Sum: {}", a + b);
-//! });
+//! fn main() {
+//!     test_case(&mut |scan, w| {
+//!         let (a, b): (i32, i32) = scan.pair();
+//!         wln!(w, "Sum: {}", a + b);
+//!     });
+//! }
 //! ```
 //!
 //! ## Reading number of test cases and processing them
@@ -50,10 +52,12 @@
 //! ``` no_run
 //! use algorist::io::{test_cases, wln};
 //!
-//! test_cases(&mut |scan, w| {
-//!     let (a, b): (i32, i32) = scan.pair();
-//!     wln!(w, "Sum: {}", a + b);
-//! });
+//! fn main() {
+//!     test_cases(&mut |scan, w| {
+//!         let (a, b): (i32, i32) = scan.pair();
+//!         wln!(w, "Sum: {}", a + b);
+//!     });
+//! }
 //! ```
 //!
 //! As you can see, the difference between reading a single test case and

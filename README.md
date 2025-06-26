@@ -20,7 +20,6 @@ commands to create a new contest project, add problems, and bundle them for subm
 
 See the [`documentation`](https://docs.rs/algorist/latest/algorist/).
 
-
 ## License
 
 MIT

@@ -156,15 +156,15 @@ macro_rules! powf_impl {
 powf_impl!(f32 f64);
 
 pub trait AsType<T> {
-    fn as_type(self) -> T;
+    fn as_type(&self) -> T;
 }
 
 macro_rules! impl_as_type {
     ($from:ty => $($to:ty),*) => {
         $(
             impl $crate::math::AsType<$to> for $from {
-                fn as_type(self) -> $to {
-                    self as $to
+                fn as_type(&self) -> $to {
+                    *self as $to
                 }
             }
         )*

@@ -1,3 +1,5 @@
+#![allow(clippy::needless_doctest_main)]
+
 //! This module features utilities for reading input using the [`Scanner`], and
 //! writing output using the [`Writer`] and [`macro@wln`] macro.
 //!

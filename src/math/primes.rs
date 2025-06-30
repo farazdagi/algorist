@@ -139,12 +139,12 @@ pub trait IsPrime {
     /// let m = 30;
     /// assert!(!m.is_prime());
     /// ```
-    fn is_prime(self) -> bool;
+    fn is_prime(&self) -> bool;
 }
 
 impl<T: Number> IsPrime for T {
-    fn is_prime(self) -> bool {
-        is_prime(self)
+    fn is_prime(&self) -> bool {
+        is_prime(*self)
     }
 }
 
@@ -223,11 +223,11 @@ impl Iterator for SieveIter {
                 .iter()
                 .skip(self.current)
                 .position(|&x| x)
-                .and_then(|i| {
+                .map(|i| {
                     // `i` is the index of the next prime number
                     let prime = self.current + i;
                     self.current = prime + 1; // Move current to the next number
-                    Some(prime)
+                    prime
                 });
         }
 

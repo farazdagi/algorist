@@ -95,8 +95,7 @@ where
     fn sqrt(&self) -> Option<Self> {
         assert!(
             self >= &Self::zero(),
-            "Cannot compute square root of a negative number: {}",
-            self
+            "Cannot compute square root of a negative number: {self}",
         );
         self.root(2)
     }

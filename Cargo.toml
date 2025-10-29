@@ -1,7 +1,8 @@
 [package]
 name = "algorist"
 version = "0.10.1"
-edition = "2024"
+edition = "2021"
+rust-version = "1.75.0"
 license = "MIT"
 authors = ["Victor Farazdagi <farazdagi@gmail.com>"]
 description = "Algorithms and data structures for competitive programming"

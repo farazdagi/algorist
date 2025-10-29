@@ -516,7 +516,7 @@ impl<T: Debug> Arr<T> {
     ///     Cell::new(&4, 1, 1)
     /// ]);
     /// ```
-    pub fn adj_cells(&self, row: usize, col: usize, cell_type: AdjacentCells) -> Vec<Cell<T>> {
+    pub fn adj_cells(&self, row: usize, col: usize, cell_type: AdjacentCells) -> Vec<Cell<'_, T>> {
         use AdjacentCells::*;
         let max_size = if cell_type == Both { 8 } else { 4 };
         let mut cells = Vec::with_capacity(max_size);
@@ -555,7 +555,7 @@ impl<T: Debug> Arr<T> {
     }
 
     /// Returns a cell at the specified coordinates in the 2D array.
-    pub fn cell(&self, row: usize, col: usize) -> Cell<T> {
+    pub fn cell(&self, row: usize, col: usize) -> Cell<'_, T> {
         Cell::from_arr(self, (row, col))
     }
 
@@ -620,7 +620,7 @@ impl<T: Debug + Ord> Arr<T> {
     /// // The minimum absolute value is 0 at (1, 2)
     /// assert_eq!(min_coords, Some(Cell::new(&0, 1, 2)));
     /// ```
-    pub fn min_by_key(&self, f: impl Fn(Cell<T>) -> T) -> Option<Cell<T>> {
+    pub fn min_by_key(&self, f: impl Fn(Cell<T>) -> T) -> Option<Cell<'_, T>> {
         let cols = self.cols;
         self.iter()
             .enumerate()
